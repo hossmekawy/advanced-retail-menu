@@ -14,10 +14,11 @@ This guide covers deploying the Advanced Retail Menu System to various platforms
 - [ ] Database migrations ready / هجرات قاعدة البيانات جاهزة
 
 ### ✅ Security Checklist / قائمة الأمان
-- [ ] Change default admin credentials / تغيير بيانات الإدارة الافتراضية
+- [ ] Create admin users through admin panel / إنشاء مستخدمين إداريين من لوحة الإدارة
 - [ ] Set strong SECRET_KEY / تعيين مفتاح سري قوي
 - [ ] Configure proper database URL / تكوين رابط قاعدة البيانات الصحيح
 - [ ] Enable HTTPS in production / تفعيل HTTPS في الإنتاج
+- [ ] Remove or disable default admin account / إزالة أو تعطيل حساب الإدارة الافتراضي
 - [ ] Set FLASK_ENV=production / تعيين بيئة الإنتاج
 
 ## 🌐 PythonAnywhere Deployment / النشر على PythonAnywhere
@@ -63,9 +64,6 @@ Add configuration / إضافة التكوين:
 FLASK_ENV=production
 SECRET_KEY=your-super-secret-production-key-here
 DATABASE_URL=sqlite:///shop_menu.db
-ADMIN_USERNAME=admin
-ADMIN_EMAIL=admin@yourdomain.com
-ADMIN_PASSWORD=your-secure-password
 ```
 
 ### Step 4: Initialize Database / الخطوة 4: تهيئة قاعدة البيانات
@@ -75,22 +73,17 @@ ADMIN_PASSWORD=your-secure-password
 python -c "
 from app import create_app
 from extensions import db
-from models import User, Settings
+from models import Settings
 
 app = create_app('production')
 with app.app_context():
     db.create_all()
-    
-    # Create admin user / إنشاء مستخدم إداري
-    if not User.query.first():
-        admin = User(username='admin', email='admin@yourdomain.com')
-        admin.set_password('your-secure-password')
-        db.session.add(admin)
-        db.session.commit()
-    
+
     # Create default settings / إنشاء إعدادات افتراضية
     Settings.get_settings()
     print('Database initialized successfully!')
+    print('Note: Default admin user will be created automatically on first run.')
+    print('Use the admin panel to create additional users.')
 "
 ```
 

@@ -1,0 +1,223 @@
+{% extends "admin/base.html" %}
+
+{% block title %}فاتورة {{ invoice.invoice_number }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-file-invoice-dollar {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            فاتورة
+        </h1>
+        <div class="flex space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+            <a href="{{ url_for('admin.pos_invoice_pdf', invoice_id=invoice.id) }}" 
+               target="_blank"
+               class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                <i class="fas fa-download {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                تحميل PDF
+            </a>
+            <button onclick="window.print()" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-print {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                طباعة
+            </button>
+            <a href="{{ url_for('admin.order_detail', id=invoice.order.id) }}" 
+               class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                العودة للطلب
+            </a>
+        </div>
+    </div>
+
+    <!-- Invoice -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden" id="invoice-content">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-8 py-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">{{ settings.shop_name }}</h2>
+                    <div class="text-purple-100">
+                        {% if settings.address %}<p>{{ settings.address }}</p>{% endif %}
+                        {% if settings.phone %}<p>هاتف: {{ settings.phone }}</p>{% endif %}
+                        {% if settings.email %}<p>بريد إلكتروني: {{ settings.email }}</p>{% endif %}
+                        {% if settings.tax_number %}<p>الرقم الضريبي: {{ settings.tax_number }}</p>{% endif %}
+                    </div>
+                </div>
+                <div class="text-right">
+                    <h3 class="text-2xl font-bold mb-2">فاتورة</h3>
+                    <div class="text-purple-100">
+                        <p>رقم الفاتورة: {{ invoice.invoice_number }}</p>
+                        <p>التاريخ: {{ invoice.invoice_date.strftime('%Y-%m-%d') }}</p>
+                        <p>الوقت: {{ invoice.invoice_date.strftime('%H:%M:%S') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-8">
+            <!-- Invoice and Customer Info -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">معلومات الطلب</h4>
+                    <div class="space-y-2 text-sm">
+                        <div><span class="font-medium text-gray-700">رقم الطلب:</span> {{ invoice.order.order_number }}</div>
+                        <div><span class="font-medium text-gray-700">تاريخ الطلب:</span> {{ invoice.order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                        <div><span class="font-medium text-gray-700">الطاولة:</span> طاولة {{ invoice.order.table.table_number }}</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-4">معلومات العميل</h4>
+                    <div class="space-y-2 text-sm">
+                        <div><span class="font-medium text-gray-700">الاسم:</span> {{ invoice.order.customer_name }}</div>
+                        <div><span class="font-medium text-gray-700">الهاتف:</span> {{ invoice.order.customer_phone }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="mb-8">
+                <h4 class="text-lg font-semibold text-gray-900 mb-4">تفاصيل الطلب</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">الصنف</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الكمية</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">سعر الوحدة</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">المجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for item in invoice.order.order_items %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ item.product.get_name('ar') }}</div>
+                                        {% if item.product.get_name('en') != item.product.get_name('ar') %}
+                                            <div class="text-sm text-gray-500">{{ item.product.get_name('en') }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                        {{ item.quantity }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                        {{ item.unit_price }} {{ invoice.order.currency }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                        {{ item.total_price }} {{ invoice.order.currency }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Totals -->
+            <div class="flex justify-end">
+                <div class="w-full max-w-md">
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">المجموع الفرعي:</span>
+                                <span class="font-medium">{{ invoice.get_formatted_subtotal() }}</span>
+                            </div>
+                            
+                            {% if invoice.tax_rate and invoice.tax_rate > 0 %}
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">الضريبة ({{ invoice.tax_rate }}%):</span>
+                                    <span class="font-medium">{{ invoice.get_formatted_tax_amount() }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="border-t border-gray-200 pt-3">
+                                <div class="flex justify-between text-lg font-bold">
+                                    <span>المجموع الكلي:</span>
+                                    <span class="text-purple-600">{{ invoice.get_formatted_total() }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            {% if invoice.notes %}
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">ملاحظات</h4>
+                    <p class="text-gray-700">{{ invoice.notes }}</p>
+                </div>
+            {% endif %}
+
+            <!-- Invoice Footer -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-gray-600">
+                    <div>
+                        <p><span class="font-medium">تم الإنشاء بواسطة:</span> {{ invoice.created_by.username }}</p>
+                        <p><span class="font-medium">تاريخ الإنشاء:</span> {{ invoice.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-medium">شكراً لزيارتكم</p>
+                        <p>نتطلع لخدمتكم مرة أخرى</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-6 flex justify-center space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+        <a href="{{ url_for('admin.pos_generate_invoice', order_id=invoice.order.id) }}" 
+           class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+            <i class="fas fa-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            إنشاء فاتورة جديدة
+        </a>
+        
+        <a href="{{ url_for('admin.pos_dashboard') }}" 
+           class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+            <i class="fas fa-home {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            العودة لنقاط البيع
+        </a>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12px;
+    }
+    
+    .bg-gradient-to-r {
+        background: #8b5cf6 !important;
+        color: white !important;
+    }
+    
+    .shadow-md {
+        box-shadow: none !important;
+    }
+    
+    .rounded-lg {
+        border-radius: 0 !important;
+    }
+    
+    .max-w-4xl {
+        max-width: 100% !important;
+    }
+    
+    .mx-auto {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    .mb-6, .mt-6 {
+        margin-bottom: 1rem !important;
+        margin-top: 1rem !important;
+    }
+}
+</style>
+{% endblock %}

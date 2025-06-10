@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}{{ _('لوحة التحكم') }} - {{ settings.shop_name }}{% endblock %}</title>
     
     <!-- Tailwind CSS -->
@@ -101,6 +102,37 @@
                        class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">
                         <i class="fas fa-file-alt {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
                         {{ _('صفحات المحتوى') }}
+                    </a>
+
+                    <a href="{{ url_for('admin.users') }}"
+                       class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">
+                        <i class="fas fa-users {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                        {{ _('المستخدمين') }}
+                    </a>
+
+                    <div class="border-t border-gray-700 my-4"></div>
+
+                    <!-- Restaurant Management Section -->
+                    <div class="px-4 py-2">
+                        <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">{{ _('إدارة المطعم') }}</h3>
+                    </div>
+
+                    <a href="{{ url_for('admin.tables') }}"
+                       class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">
+                        <i class="fas fa-chair {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                        {{ _('الطاولات') }}
+                    </a>
+
+                    <a href="{{ url_for('admin.orders') }}"
+                       class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">
+                        <i class="fas fa-receipt {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                        {{ _('الطلبات') }}
+                    </a>
+
+                    <a href="{{ url_for('admin.pos_dashboard') }}"
+                       class="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded-md transition-colors">
+                        <i class="fas fa-cash-register {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                        {{ _('نقاط البيع') }}
                     </a>
 
                     <div class="border-t border-gray-700 my-4"></div>

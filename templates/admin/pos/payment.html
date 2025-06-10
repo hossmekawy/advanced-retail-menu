@@ -1,0 +1,258 @@
+{% extends "admin/base.html" %}
+
+{% block title %}معالجة الدفع - الطلب {{ order.order_number }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-credit-card {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            معالجة الدفع
+        </h1>
+        <a href="{{ url_for('admin.order_detail', id=order.id) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            العودة للطلب
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Order Summary -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-500 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-receipt {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    ملخص الطلب
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">رقم الطلب:</span>
+                        <span class="text-gray-900">{{ order.order_number }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">العميل:</span>
+                        <span class="text-gray-900">{{ order.customer_name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">الهاتف:</span>
+                        <span class="text-gray-900">{{ order.customer_phone }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">الطاولة:</span>
+                        <span class="text-gray-900">طاولة {{ order.table.table_number }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">حالة الطلب:</span>
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                            {% if order.get_status_color() == 'yellow' %}bg-yellow-100 text-yellow-800
+                            {% elif order.get_status_color() == 'green' %}bg-green-100 text-green-800
+                            {% elif order.get_status_color() == 'red' %}bg-red-100 text-red-800
+                            {% elif order.get_status_color() == 'blue' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ order.get_status_text('ar') }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">حالة الدفع:</span>
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                            {% if order.payment_status == 'unpaid' %}bg-red-100 text-red-800
+                            {% elif order.payment_status == 'partial' %}bg-yellow-100 text-yellow-800
+                            {% elif order.payment_status == 'paid' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {% if order.payment_status == 'unpaid' %}غير مدفوع
+                            {% elif order.payment_status == 'partial' %}مدفوع جزئياً
+                            {% elif order.payment_status == 'paid' %}مدفوع
+                            {% else %}{{ order.payment_status }}{% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>المجموع الكلي:</span>
+                        <span class="text-green-600">{{ order.get_formatted_total() }}</span>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="mt-6">
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">عناصر الطلب:</h4>
+                    <div class="space-y-2">
+                        {% for item in order.order_items %}
+                            <div class="flex justify-between text-sm">
+                                <span>{{ item.product.get_name('ar') }} × {{ item.quantity }}</span>
+                                <span>{{ item.get_formatted_total_price() }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Form -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-green-500 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-money-bill-wave {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    معلومات الدفع
+                </h3>
+            </div>
+            <div class="p-6">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
+                    <!-- Amount -->
+                    <div class="mb-6">
+                        <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
+                            المبلغ <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.amount(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent", id="amount") }}
+                        {% if form.amount.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.amount.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="mb-6">
+                        <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-2">
+                            طريقة الدفع <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.payment_method(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent", id="payment_method") }}
+                        {% if form.payment_method.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.payment_method.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Reference Number -->
+                    <div class="mb-6">
+                        <label for="reference_number" class="block text-sm font-medium text-gray-700 mb-2">
+                            رقم المرجع (اختياري)
+                        </label>
+                        {{ form.reference_number(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent", id="reference_number", placeholder="رقم المرجع للمعاملة") }}
+                        {% if form.reference_number.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.reference_number.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-6">
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            ملاحظات (اختياري)
+                        </label>
+                        {{ form.notes(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent", id="notes", placeholder="ملاحظات إضافية") }}
+                        {% if form.notes.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.notes.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                            class="w-full bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i class="fas fa-check {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        تأكيد الدفع
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment History -->
+    {% if order.payments %}
+        <div class="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-history {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    تاريخ المدفوعات
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الدفع</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">طريقة الدفع</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for payment in order.payments %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ payment.payment_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                    {{ payment.get_formatted_amount() }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                    {{ payment.get_payment_method_text('ar') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                        {% if payment.get_status_color() == 'green' %}bg-green-100 text-green-800
+                                        {% elif payment.get_status_color() == 'red' %}bg-red-100 text-red-800
+                                        {% elif payment.get_status_color() == 'yellow' %}bg-yellow-100 text-yellow-800
+                                        {% elif payment.get_status_color() == 'blue' %}bg-blue-100 text-blue-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ payment.get_status_text('ar') }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                    {{ payment.payment_timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                    <div class="flex justify-center space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                                        <a href="{{ url_for('admin.pos_payment_receipt', payment_id=payment.id) }}"
+                                           class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-receipt"></i>
+                                        </a>
+                                        {% if payment.payment_status == 'completed' and payment.amount > 0 %}
+                                            <a href="{{ url_for('admin.pos_process_refund', payment_id=payment.id) }}"
+                                               class="text-red-600 hover:text-red-900">
+                                                <i class="fas fa-undo"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Auto-calculate change if needed
+document.getElementById('amount').addEventListener('input', function() {
+    const amount = parseFloat(this.value) || 0;
+    const total = {{ order.total_amount }};
+    
+    if (amount > total) {
+        const change = amount - total;
+        // You can add change calculation display here
+    }
+});
+</script>
+{% endblock %}

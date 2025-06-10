@@ -1,0 +1,212 @@
+{% extends "admin/base.html" %}
+
+{% block title %}إغلاق الوردية - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-stop {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            إغلاق الوردية
+        </h1>
+        <a href="{{ url_for('admin.pos_dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            العودة
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Shift Summary -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-500 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-info-circle {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    ملخص الوردية
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">رقم الوردية:</span>
+                        <span class="text-gray-900">{{ shift.shift_number }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">المستخدم:</span>
+                        <span class="text-gray-900">{{ shift.user.username }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">وقت البداية:</span>
+                        <span class="text-gray-900">{{ shift.start_time.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">المدة:</span>
+                        <span class="text-gray-900">{{ shift.get_duration() }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">الرصيد الافتتاحي:</span>
+                        <span class="text-gray-900">{{ shift.get_formatted_opening_balance() }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">الرصيد الحالي للخزنة:</h4>
+                    <div class="text-2xl font-bold text-green-600">{{ cash_drawer.get_formatted_balance() }}</div>
+                    <p class="text-sm text-gray-500 mt-1">
+                        آخر تحديث: {{ cash_drawer.last_updated_at.strftime('%H:%M') if cash_drawer.last_updated_at else 'غير محدد' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Close Shift Form -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-red-500 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-calculator {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    إغلاق الوردية
+                </h3>
+            </div>
+            <div class="p-6">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
+                    <!-- Closing Balance -->
+                    <div class="mb-6">
+                        <label for="closing_balance" class="block text-sm font-medium text-gray-700 mb-2">
+                            الرصيد الختامي الفعلي <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            {{ form.closing_balance(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent", id="closing_balance", placeholder="0.00") }}
+                            <div class="absolute inset-y-0 {{ 'left-0' if current_lang == 'ar' else 'right-0' }} pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">{{ cash_drawer.currency }}</span>
+                            </div>
+                        </div>
+                        {% if form.closing_balance.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.closing_balance.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">
+                            عد النقد الموجود في الخزنة فعلياً
+                        </p>
+                    </div>
+
+                    <!-- Expected vs Actual -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-900 mb-3">مقارنة الأرصدة:</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">الرصيد المتوقع:</span>
+                                <span class="font-medium" id="expected-balance">{{ cash_drawer.get_formatted_balance() }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">الرصيد الفعلي:</span>
+                                <span class="font-medium" id="actual-balance">-</span>
+                            </div>
+                            <div class="flex justify-between border-t pt-2">
+                                <span class="text-gray-600">الفرق:</span>
+                                <span class="font-medium" id="variance">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-6">
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            ملاحظات الإغلاق (اختياري)
+                        </label>
+                        {{ form.notes(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent", id="notes", placeholder="ملاحظات حول إغلاق الوردية") }}
+                        {% if form.notes.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.notes.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                        <button type="submit" 
+                                class="flex-1 bg-red-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            <i class="fas fa-stop {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            إغلاق الوردية
+                        </button>
+                        
+                        <a href="{{ url_for('admin.pos_dashboard') }}" 
+                           class="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors text-center">
+                            <i class="fas fa-times {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Notice -->
+    <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                <h3 class="text-sm font-medium text-red-800">تحذير مهم</h3>
+                <div class="mt-2 text-sm text-red-700">
+                    <ul class="list-disc {{ 'pr-5' if current_lang == 'ar' else 'pl-5' }} space-y-1">
+                        <li>تأكد من عد النقد الموجود في الخزنة فعلياً قبل الإغلاق</li>
+                        <li>سيتم إنهاء الوردية نهائياً ولا يمكن التراجع</li>
+                        <li>سيتم حساب الفرق بين الرصيد المتوقع والفعلي</li>
+                        <li>تأكد من تسجيل جميع المعاملات قبل الإغلاق</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate variance when closing balance changes
+document.getElementById('closing_balance').addEventListener('input', function() {
+    const expectedBalance = {{ cash_drawer.current_balance }};
+    const actualBalance = parseFloat(this.value) || 0;
+    const variance = actualBalance - expectedBalance;
+    
+    // Update display
+    document.getElementById('actual-balance').textContent = actualBalance.toFixed(2) + ' {{ cash_drawer.currency }}';
+    
+    const varianceElement = document.getElementById('variance');
+    varianceElement.textContent = variance.toFixed(2) + ' {{ cash_drawer.currency }}';
+    
+    // Color code the variance
+    if (variance > 0) {
+        varianceElement.className = 'font-medium text-green-600';
+    } else if (variance < 0) {
+        varianceElement.className = 'font-medium text-red-600';
+    } else {
+        varianceElement.className = 'font-medium text-gray-900';
+    }
+});
+
+// Auto-focus on closing balance field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('closing_balance').focus();
+    
+    // Set default value to current balance
+    document.getElementById('closing_balance').value = {{ cash_drawer.current_balance }};
+    document.getElementById('closing_balance').dispatchEvent(new Event('input'));
+});
+
+// Format number input
+document.getElementById('closing_balance').addEventListener('input', function() {
+    let value = this.value.replace(/[^\d.]/g, '');
+    if (value.split('.').length > 2) {
+        value = value.substring(0, value.lastIndexOf('.'));
+    }
+    this.value = value;
+});
+</script>
+{% endblock %}

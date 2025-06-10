@@ -1,0 +1,251 @@
+{% extends "admin/base.html" %}
+
+{% block title %}إنشاء فاتورة - الطلب {{ order.order_number }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-file-invoice {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            إنشاء فاتورة
+        </h1>
+        <a href="{{ url_for('admin.order_detail', id=order.id) }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            العودة للطلب
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Order Summary -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-blue-500 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-receipt {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    ملخص الطلب
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">رقم الطلب:</span>
+                        <span class="text-gray-900">{{ order.order_number }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">العميل:</span>
+                        <span class="text-gray-900">{{ order.customer_name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">الهاتف:</span>
+                        <span class="text-gray-900">{{ order.customer_phone }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">الطاولة:</span>
+                        <span class="text-gray-900">طاولة {{ order.table.table_number }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-700">التاريخ:</span>
+                        <span class="text-gray-900">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="mt-6">
+                    <h4 class="text-md font-semibold text-gray-900 mb-3">عناصر الطلب:</h4>
+                    <div class="space-y-2">
+                        {% for item in order.order_items %}
+                            <div class="flex justify-between text-sm">
+                                <span>{{ item.product.get_name('ar') }} × {{ item.quantity }}</span>
+                                <span>{{ item.get_formatted_total_price() }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>المجموع الفرعي:</span>
+                        <span class="text-green-600">{{ order.get_formatted_total() }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Form -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="bg-purple-500 text-white px-6 py-4">
+                <h3 class="text-lg font-semibold">
+                    <i class="fas fa-calculator {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    تفاصيل الفاتورة
+                </h3>
+            </div>
+            <div class="p-6">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    
+                    <!-- Tax Rate -->
+                    <div class="mb-6">
+                        <label for="tax_rate" class="block text-sm font-medium text-gray-700 mb-2">
+                            نسبة الضريبة (%)
+                        </label>
+                        {{ form.tax_rate(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent", id="tax_rate", placeholder="0") }}
+                        {% if form.tax_rate.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.tax_rate.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">
+                            اتركه فارغاً أو 0 إذا لم تكن هناك ضريبة
+                        </p>
+                    </div>
+
+                    <!-- Tax Calculation Preview -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-900 mb-3">معاينة الحساب:</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">المجموع الفرعي:</span>
+                                <span class="font-medium">{{ order.total_amount }} {{ order.currency }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">الضريبة:</span>
+                                <span class="font-medium" id="tax-amount">0.00 {{ order.currency }}</span>
+                            </div>
+                            <div class="flex justify-between border-t pt-2">
+                                <span class="text-gray-600 font-medium">المجموع الكلي:</span>
+                                <span class="font-bold text-purple-600" id="total-amount">{{ order.total_amount }} {{ order.currency }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-6">
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            ملاحظات الفاتورة (اختياري)
+                        </label>
+                        {{ form.notes(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent", id="notes", placeholder="ملاحظات إضافية للفاتورة") }}
+                        {% if form.notes.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.notes.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" 
+                            class="w-full bg-purple-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-purple-600 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                        <i class="fas fa-file-invoice {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        إنشاء الفاتورة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Existing Invoices -->
+    {% if order.invoices %}
+        <div class="mt-8 bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-history {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    الفواتير الموجودة
+                </h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الفاتورة</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">المجموع</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الضريبة</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for invoice in order.invoices %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    {{ invoice.invoice_number }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                    {{ invoice.invoice_date.strftime('%Y-%m-%d %H:%M') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                    {{ invoice.get_formatted_total() }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                    {{ invoice.get_formatted_tax_amount() }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                    <div class="flex justify-center space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                                        <a href="{{ url_for('admin.pos_invoice_detail', invoice_id=invoice.id) }}"
+                                           class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-eye" title="عرض الفاتورة"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.pos_invoice_pdf', invoice_id=invoice.id) }}"
+                                           class="text-green-600 hover:text-green-900">
+                                            <i class="fas fa-download" title="تحميل PDF"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Information Notice -->
+    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-600"></i>
+            </div>
+            <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                <h3 class="text-sm font-medium text-blue-800">معلومات مهمة</h3>
+                <div class="mt-2 text-sm text-blue-700">
+                    <ul class="list-disc {{ 'pr-5' if current_lang == 'ar' else 'pl-5' }} space-y-1">
+                        <li>سيتم إنشاء رقم فاتورة فريد تلقائياً</li>
+                        <li>يمكن إنشاء عدة فواتير لنفس الطلب</li>
+                        <li>سيتم حساب الضريبة تلقائياً بناءً على النسبة المدخلة</li>
+                        <li>يمكن طباعة الفاتورة أو تحميلها كملف PDF</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calculate tax and total when tax rate changes
+document.getElementById('tax_rate').addEventListener('input', function() {
+    const subtotal = {{ order.total_amount }};
+    const taxRate = parseFloat(this.value) || 0;
+    const taxAmount = (subtotal * taxRate) / 100;
+    const totalAmount = subtotal + taxAmount;
+    
+    // Update display
+    document.getElementById('tax-amount').textContent = taxAmount.toFixed(2) + ' {{ order.currency }}';
+    document.getElementById('total-amount').textContent = totalAmount.toFixed(2) + ' {{ order.currency }}';
+});
+
+// Format number input
+document.getElementById('tax_rate').addEventListener('input', function() {
+    let value = this.value.replace(/[^\d.]/g, '');
+    if (value.split('.').length > 2) {
+        value = value.substring(0, value.lastIndexOf('.'));
+    }
+    // Limit to 100%
+    if (parseFloat(value) > 100) {
+        value = '100';
+    }
+    this.value = value;
+});
+</script>
+{% endblock %}

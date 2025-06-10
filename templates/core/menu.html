@@ -51,13 +51,18 @@
                     <div class="p-4">
                         <h3 class="text-lg font-semibold text-gray-900 mb-2" x-text="product.name"></h3>
                         <p class="text-gray-600 text-sm mb-3" x-text="product.description"></p>
-                        <div class="flex justify-between items-center">
-                            <span class="text-lg font-bold text-primary" 
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-lg font-bold text-primary"
                                   x-text="formatPrice(product.price, product.currency)"></span>
-                            <button class="bg-secondary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
-                                {{ _('عرض التفاصيل') }}
+                            <button @click="showProductModal(product)" class="bg-secondary text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-90 transition-colors">
+                                {{ _('عرض') }}
                             </button>
                         </div>
+                        <button @click="addToCart(product.id)"
+                                class="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                            <i class="fas fa-cart-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            {{ _('إضافة للسلة') }}
+                        </button>
                     </div>
                 </div>
             </template>
@@ -112,13 +117,18 @@
                                             </span>
                                         </div>
                                         <p class="text-gray-600 text-sm mb-3 line-clamp-2" x-text="product.description"></p>
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-lg font-bold text-primary" 
+                                        <div class="flex justify-between items-center mb-3">
+                                            <span class="text-lg font-bold text-primary"
                                                   x-text="formatPrice(product.price, product.currency)"></span>
-                                            <button class="bg-secondary text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-90 transition-colors">
+                                            <button @click.stop="showProductModal(product)" class="bg-secondary text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-90 transition-colors">
                                                 {{ _('عرض') }}
                                             </button>
                                         </div>
+                                        <button @click.stop="addToCart(product.id)"
+                                                class="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                                            <i class="fas fa-cart-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                                            {{ _('إضافة للسلة') }}
+                                        </button>
                                     </div>
                                 </div>
                             </template>
@@ -146,13 +156,18 @@
                                         </span>
                                     </div>
                                     <p class="text-gray-600 text-sm mb-3 line-clamp-2" x-text="product.description"></p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-lg font-bold text-primary" 
+                                    <div class="flex justify-between items-center mb-3">
+                                        <span class="text-lg font-bold text-primary"
                                               x-text="formatPrice(product.price, product.currency)"></span>
-                                        <button class="bg-secondary text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-90 transition-colors">
+                                        <button @click.stop="showProductModal(product)" class="bg-secondary text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-90 transition-colors">
                                             {{ _('عرض') }}
                                         </button>
                                     </div>
+                                    <button @click.stop="addToCart(product.id)"
+                                            class="w-full bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                                        <i class="fas fa-cart-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                                        {{ _('إضافة للسلة') }}
+                                    </button>
                                 </div>
                             </div>
                         </template>
@@ -199,13 +214,29 @@
                                 <p class="text-gray-600 text-sm" x-text="selectedProduct.ingredients"></p>
                             </div>
                             
-                            <div class="flex justify-between items-center">
-                                <span class="text-2xl font-bold text-primary" 
+                            <div class="flex justify-between items-center mb-6">
+                                <span class="text-2xl font-bold text-primary"
                                       x-text="formatPrice(selectedProduct.price, selectedProduct.currency)"></span>
-                                <span x-show="selectedProduct.is_featured" 
+                                <span x-show="selectedProduct.is_featured"
                                       class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full">
                                     {{ _('منتج مميز') }}
                                 </span>
+                            </div>
+
+                            <!-- Add to Cart Section -->
+                            <div class="flex items-center space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                                <div class="flex items-center">
+                                    <label for="modal-quantity" class="text-sm font-medium text-gray-700 {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}">
+                                        {{ _('الكمية') }}:
+                                    </label>
+                                    <input type="number" id="modal-quantity" x-model="modalQuantity" value="1" min="1" max="99"
+                                           class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary text-center">
+                                </div>
+                                <button @click="addToCart(selectedProduct.id, modalQuantity); closeModal();"
+                                        class="flex-1 bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-colors font-medium">
+                                    <i class="fas fa-cart-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                                    {{ _('إضافة للسلة') }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -227,6 +258,7 @@ function menuApp() {
         loading: true,
         showModal: false,
         selectedProduct: null,
+        modalQuantity: 1,
 
         currentLang: '{{ current_lang }}',
         
@@ -283,6 +315,7 @@ function menuApp() {
         
         showProductModal(product) {
             this.selectedProduct = product;
+            this.modalQuantity = 1;
             this.showModal = true;
             document.body.style.overflow = 'hidden';
         },
@@ -291,6 +324,98 @@ function menuApp() {
             this.showModal = false;
             this.selectedProduct = null;
             document.body.style.overflow = 'auto';
+        },
+
+        async addToCart(productId, quantity = 1) {
+            try {
+                const formData = new FormData();
+                formData.append('quantity', quantity);
+
+                // Get CSRF token from meta tag or cookie
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                                 '{{ csrf_token() }}';
+                formData.append('csrf_token', csrfToken);
+
+                const response = await fetch(`/cart/add/${productId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (response.ok) {
+                    // Try to parse JSON response
+                    try {
+                        const data = await response.json();
+                        if (data.success) {
+                            this.showNotification(data.message || 'تم إضافة المنتج للسلة بنجاح', 'success');
+                            // Update cart count if available
+                            if (window.MenuUtils && window.MenuUtils.cartManager) {
+                                window.MenuUtils.cartManager.updateCartDisplay();
+                            }
+                        } else {
+                            this.showNotification(data.message || 'حدث خطأ أثناء إضافة المنتج', 'error');
+                        }
+                    } catch (jsonError) {
+                        // If not JSON, assume success (redirect response)
+                        this.showNotification('تم إضافة المنتج للسلة بنجاح', 'success');
+                        // Reload page to show flash messages
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    }
+                } else {
+                    // Try to get error message from response
+                    try {
+                        const errorData = await response.json();
+                        this.showNotification(errorData.message || 'حدث خطأ أثناء إضافة المنتج', 'error');
+                    } catch {
+                        this.showNotification('حدث خطأ أثناء إضافة المنتج', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Error adding to cart:', error);
+                this.showNotification('حدث خطأ أثناء إضافة المنتج', 'error');
+            }
+        },
+
+        showNotification(message, type = 'success') {
+            // Simple notification fallback
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 z-50 max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden transform transition-all duration-300`;
+
+            const bgColor = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const textColor = type === 'success' ? 'text-green-800' : 'text-red-800';
+            const iconClass = type === 'success' ? 'fa-check-circle text-green-400' : 'fa-exclamation-circle text-red-400';
+
+            notification.innerHTML = `
+                <div class="p-4 ${bgColor}">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div class="mr-3 w-0 flex-1 pt-0.5">
+                            <p class="text-sm font-medium ${textColor}">${message}</p>
+                        </div>
+                        <div class="ml-4 flex-shrink-0 flex">
+                            <button onclick="this.parentElement.parentElement.parentElement.parentElement.remove()"
+                                    class="bg-transparent rounded-md inline-flex ${textColor} hover:opacity-75">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Auto hide notification
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
         }
     }
 }

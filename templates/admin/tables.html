@@ -1,0 +1,136 @@
+{% extends "admin/base.html" %}
+
+{% block title %}إدارة الطاولات - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-chair {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            إدارة الطاولات
+        </h1>
+        <a href="{{ url_for('admin.add_table') }}" class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
+            <i class="fas fa-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            إضافة طاولة جديدة
+        </a>
+    </div>
+
+    <!-- Tables Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for table in tables %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden border-2 border-{{ 'green-500' if table.get_status_color() == 'green' else 'red-500' if table.get_status_color() == 'red' else 'yellow-500' if table.get_status_color() == 'yellow' else 'gray-300' }}">
+                <div class="bg-{{ 'green-500' if table.get_status_color() == 'green' else 'red-500' if table.get_status_color() == 'red' else 'yellow-500' if table.get_status_color() == 'yellow' else 'gray-500' }} text-white p-4 text-center">
+                    <h3 class="text-lg font-semibold">
+                        <i class="fas fa-chair {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        طاولة {{ table.table_number }}
+                    </h3>
+                </div>
+                <div class="p-4 text-center">
+                    <div class="mb-3">
+                        <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-{{ 'green-100 text-green-800' if table.get_status_color() == 'green' else 'red-100 text-red-800' if table.get_status_color() == 'red' else 'yellow-100 text-yellow-800' if table.get_status_color() == 'yellow' else 'gray-100 text-gray-800' }}">
+                            {{ table.get_status_text('ar') }}
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <span class="text-sm text-gray-600">
+                            <i class="fas fa-users {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                            {{ table.capacity }} أشخاص
+                        </span>
+                    </div>
+
+                    <!-- Current Order Info -->
+                    {% set current_order = table.orders | selectattr('status', 'in', ['pending', 'preparing', 'ready']) | first %}
+                    {% if current_order %}
+                        <div class="mb-3 p-3 bg-gray-50 rounded-lg">
+                            <div class="text-xs text-gray-500 mb-1">طلب حالي:</div>
+                            <div class="font-semibold text-primary">{{ current_order.order_number }}</div>
+                            <div class="text-sm text-gray-700">{{ current_order.customer_name }}</div>
+                            <div class="text-sm text-green-600 font-medium">{{ current_order.get_formatted_total() }}</div>
+                        </div>
+                    {% endif %}
+
+                    <div class="flex space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                        <a href="{{ url_for('admin.edit_table', id=table.id) }}"
+                           class="flex-1 bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        {% if current_order %}
+                            <a href="{{ url_for('admin.order_detail', id=current_order.id) }}"
+                               class="flex-1 bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition-colors">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        {% endif %}
+                        <form method="POST" action="{{ url_for('admin.delete_table', id=table.id) }}"
+                              class="flex-1" onsubmit="return confirm('هل أنت متأكد من حذف هذه الطاولة؟')">
+                            <button type="submit" class="w-full bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-2 text-center">
+                    <span class="text-xs text-gray-600">
+                        {% if table.is_active %}
+                            <i class="fas fa-check-circle text-green-500 {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                            نشط
+                        {% else %}
+                            <i class="fas fa-times-circle text-red-500 {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                            غير نشط
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-span-full">
+                <div class="text-center py-12">
+                    <i class="fas fa-chair text-6xl text-gray-300 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">لا توجد طاولات</h3>
+                    <p class="text-gray-600 mb-6">ابدأ بإضافة طاولة جديدة</p>
+                    <a href="{{ url_for('admin.add_table') }}" class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition-colors">
+                        <i class="fas fa-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        إضافة طاولة جديدة
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Statistics -->
+    {% if tables %}
+        <div class="mt-8">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-chart-bar {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        إحصائيات الطاولات
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                        <div class="border-{{ 'l' if current_lang == 'ar' else 'r' }} border-gray-200 {{ 'pl-6' if current_lang == 'ar' else 'pr-6' }}">
+                            <div class="text-2xl font-bold text-primary">{{ tables | length }}</div>
+                            <div class="text-sm text-gray-600">إجمالي الطاولات</div>
+                        </div>
+                        <div class="border-{{ 'l' if current_lang == 'ar' else 'r' }} border-gray-200 {{ 'pl-6' if current_lang == 'ar' else 'pr-6' }}">
+                            <div class="text-2xl font-bold text-green-600">{{ tables | selectattr('status', 'equalto', 'available') | list | length }}</div>
+                            <div class="text-sm text-gray-600">متاحة</div>
+                        </div>
+                        <div class="border-{{ 'l' if current_lang == 'ar' else 'r' }} border-gray-200 {{ 'pl-6' if current_lang == 'ar' else 'pr-6' }}">
+                            <div class="text-2xl font-bold text-red-600">{{ tables | selectattr('status', 'equalto', 'occupied') | list | length }}</div>
+                            <div class="text-sm text-gray-600">مشغولة</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold text-yellow-600">{{ tables | selectattr('status', 'equalto', 'order_placed') | list | length }}</div>
+                            <div class="text-sm text-gray-600">طلبات في الانتظار</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+
+{% endblock %}

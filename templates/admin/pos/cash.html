@@ -1,0 +1,221 @@
+{% extends "admin/base.html" %}
+
+{% block title %}إدارة النقد - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-wallet {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            إدارة النقد
+        </h1>
+        <div class="flex space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+            <a href="{{ url_for('admin.pos_cash_transaction') }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                معاملة جديدة
+            </a>
+            <a href="{{ url_for('admin.pos_dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                العودة لنقاط البيع
+            </a>
+        </div>
+    </div>
+
+    <!-- Cash Balance Card -->
+    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg shadow-md p-8 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">رصيد الخزنة الحالي</h2>
+                <p class="text-green-100">آخر تحديث: {{ cash_drawer.last_updated_at.strftime('%Y-%m-%d %H:%M') if cash_drawer.last_updated_at else 'غير محدد' }}</p>
+                {% if cash_drawer.last_updated_by %}
+                    <p class="text-green-100">بواسطة: {{ cash_drawer.last_updated_by.username }}</p>
+                {% endif %}
+            </div>
+            <div class="text-right">
+                <div class="text-4xl font-bold">{{ cash_drawer.get_formatted_balance() }}</div>
+                <div class="text-green-100">{{ cash_drawer.currency }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-history {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                آخر المعاملات النقدية
+            </h3>
+        </div>
+        
+        {% if recent_transactions %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">نوع المعاملة</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">المبلغ</th>
+                            <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">الوصف</th>
+                            <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">المستخدم</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for transaction in recent_transactions %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            {% if transaction.transaction_type == 'sale' %}
+                                                <i class="fas fa-arrow-up text-green-600"></i>
+                                            {% elif transaction.transaction_type == 'withdrawal' %}
+                                                <i class="fas fa-arrow-down text-red-600"></i>
+                                            {% elif transaction.transaction_type == 'deposit' %}
+                                                <i class="fas fa-arrow-up text-blue-600"></i>
+                                            {% elif transaction.transaction_type == 'refund' %}
+                                                <i class="fas fa-undo text-orange-600"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                                            <div class="text-sm font-medium text-gray-900">
+                                                {{ transaction.get_transaction_type_text('ar') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <span class="text-sm font-medium
+                                        {% if transaction.transaction_type in ['sale', 'deposit'] %}text-green-600
+                                        {% elif transaction.transaction_type in ['withdrawal', 'refund'] %}text-red-600
+                                        {% else %}text-gray-900{% endif %}">
+                                        {% if transaction.transaction_type in ['sale', 'deposit'] %}+{% elif transaction.transaction_type in ['withdrawal', 'refund'] %}-{% endif %}{{ transaction.get_formatted_amount() }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ transaction.description }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ transaction.user.username }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                    {{ transaction.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-6 text-center text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-4"></i>
+                <p>لا توجد معاملات نقدية</p>
+                <a href="{{ url_for('admin.pos_cash_transaction') }}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                    <i class="fas fa-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    إضافة معاملة جديدة
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-plus-circle text-green-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <h3 class="text-lg font-medium text-gray-900">إيداع نقدي</h3>
+                    <p class="text-sm text-gray-500">إضافة أموال للخزنة</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ url_for('admin.pos_cash_transaction') }}?type=deposit" 
+                   class="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-center block">
+                    إيداع
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-minus-circle text-red-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <h3 class="text-lg font-medium text-gray-900">سحب نقدي</h3>
+                    <p class="text-sm text-gray-500">سحب أموال من الخزنة</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ url_for('admin.pos_cash_transaction') }}?type=withdrawal" 
+                   class="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-center block">
+                    سحب
+                </a>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <h3 class="text-lg font-medium text-gray-900">تقرير النقد</h3>
+                    <p class="text-sm text-gray-500">عرض تقرير مفصل</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="{{ url_for('admin.pos_shifts_list') }}" 
+                   class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-center block">
+                    التقارير
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cash Summary -->
+    <div class="mt-8 bg-white rounded-lg shadow-md p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            <i class="fas fa-calculator {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            ملخص النقد اليومي
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">
+                    {% set today_deposits = recent_transactions|selectattr('transaction_type', 'equalto', 'deposit')|selectattr('created_at')|list %}
+                    {% set deposit_total = today_deposits|sum(attribute='amount') or 0 %}
+                    {{ deposit_total }} {{ cash_drawer.currency }}
+                </div>
+                <div class="text-sm text-gray-500">إيداعات اليوم</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-2xl font-bold text-red-600">
+                    {% set today_withdrawals = recent_transactions|selectattr('transaction_type', 'equalto', 'withdrawal')|selectattr('created_at')|list %}
+                    {% set withdrawal_total = today_withdrawals|sum(attribute='amount') or 0 %}
+                    {{ withdrawal_total }} {{ cash_drawer.currency }}
+                </div>
+                <div class="text-sm text-gray-500">سحوبات اليوم</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">
+                    {% set today_sales = recent_transactions|selectattr('transaction_type', 'equalto', 'sale')|selectattr('created_at')|list %}
+                    {% set sales_total = today_sales|sum(attribute='amount') or 0 %}
+                    {{ sales_total }} {{ cash_drawer.currency }}
+                </div>
+                <div class="text-sm text-gray-500">مبيعات نقدية</div>
+            </div>
+            
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">
+                    {{ recent_transactions|length }}
+                </div>
+                <div class="text-sm text-gray-500">إجمالي المعاملات</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

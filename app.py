@@ -18,7 +18,12 @@ def create_app(config_name=None):
     """مصنع التطبيق - Application factory"""
     if config_name is None:
         config_name = os.environ.get('FLASK_ENV', 'development')
-    
+
+    # Ensure the config_name exists in our config dictionary
+    if config_name not in config:
+        print(f"Warning: Configuration '{config_name}' not found. Using 'development' instead.")
+        config_name = 'development'
+
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     
@@ -59,6 +64,35 @@ def create_app(config_name=None):
         """حقن المتغيرات العامة في جميع القوالب - Inject global variables into all templates"""
         from models import ContentPage
         from flask_login import current_user
+        from datetime import datetime
+
+        def moment():
+            """دالة تشبه moment.js لتنسيق التاريخ والوقت - Moment.js-like function for date/time formatting"""
+            class MomentWrapper:
+                def __init__(self):
+                    self.dt = datetime.now()
+
+                def format(self, format_str):
+                    """تنسيق التاريخ والوقت - Format date and time"""
+                    # تحويل تنسيق moment.js إلى تنسيق Python strftime
+                    # Convert moment.js format to Python strftime format
+                    format_map = {
+                        'YYYY': '%Y',
+                        'MM': '%m',
+                        'DD': '%d',
+                        'HH': '%H',
+                        'mm': '%M',
+                        'ss': '%S'
+                    }
+
+                    python_format = format_str
+                    for moment_format, python_format_code in format_map.items():
+                        python_format = python_format.replace(moment_format, python_format_code)
+
+                    return self.dt.strftime(python_format)
+
+            return MomentWrapper()
+
         settings = Settings.get_settings()
         footer_page = ContentPage.get_page('footer')
         return {
@@ -68,7 +102,8 @@ def create_app(config_name=None):
             'available_languages': app.config['LANGUAGES'],
             'available_currencies': app.config['CURRENCIES'],
             'current_user': current_user,  # Make current_user available in templates
-            '_': _  # Make translation function available in templates
+            '_': _,  # Make translation function available in templates
+            'moment': moment  # Make moment function available in templates
         }
     
     # معالج الأخطاء - Error handlers
@@ -93,7 +128,7 @@ def create_app(config_name=None):
                 username='admin',
                 email='admin@example.com'
             )
-            admin_user.set_password('admin123')
+            admin_user.set_password('admin2025')
             db.session.add(admin_user)
             db.session.commit()
 

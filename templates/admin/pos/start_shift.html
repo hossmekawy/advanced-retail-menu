@@ -1,0 +1,163 @@
+{% extends "admin/base.html" %}
+
+{% block title %}بدء وردية جديدة - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-play {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            بدء وردية جديدة
+        </h1>
+        <a href="{{ url_for('admin.pos_dashboard') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            العودة
+        </a>
+    </div>
+
+    <!-- Current Cash Drawer Status -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <i class="fas fa-wallet text-blue-600 text-2xl"></i>
+            </div>
+            <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                <h3 class="text-lg font-medium text-blue-800">رصيد الخزنة الحالي</h3>
+                <p class="text-2xl font-bold text-blue-900">{{ cash_drawer.get_formatted_balance() }}</p>
+                <p class="text-blue-600 text-sm">
+                    آخر تحديث: {{ cash_drawer.last_updated_at.strftime('%Y-%m-%d %H:%M') if cash_drawer.last_updated_at else 'غير محدد' }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-green-500 text-white px-6 py-4">
+            <h3 class="text-lg font-semibold">
+                <i class="fas fa-clock {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                تفاصيل الوردية الجديدة
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                
+                <!-- Opening Balance -->
+                <div class="mb-6">
+                    <label for="opening_balance" class="block text-sm font-medium text-gray-700 mb-2">
+                        الرصيد الافتتاحي <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        {{ form.opening_balance(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent", id="opening_balance", placeholder="0.00") }}
+                        <div class="absolute inset-y-0 {{ 'left-0' if current_lang == 'ar' else 'right-0' }} pr-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">{{ cash_drawer.currency }}</span>
+                        </div>
+                    </div>
+                    {% if form.opening_balance.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.opening_balance.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">
+                        تأكد من عد النقد الموجود في الخزنة فعلياً
+                    </p>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-6">
+                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                        ملاحظات الوردية (اختياري)
+                    </label>
+                    {{ form.notes(class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent", id="notes", placeholder="ملاحظات حول بداية الوردية") }}
+                    {% if form.notes.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.notes.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                    <button type="submit" 
+                            class="flex-1 bg-green-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        <i class="fas fa-play {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        بدء الوردية
+                    </button>
+                    
+                    <a href="{{ url_for('admin.pos_dashboard') }}" 
+                       class="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg font-medium hover:bg-gray-600 transition-colors text-center">
+                        <i class="fas fa-times {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-yellow-600"></i>
+            </div>
+            <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                <h3 class="text-sm font-medium text-yellow-800">تعليمات مهمة</h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <ul class="list-disc {{ 'pr-5' if current_lang == 'ar' else 'pl-5' }} space-y-1">
+                        <li>عد النقد الموجود في الخزنة فعلياً قبل إدخال الرصيد الافتتاحي</li>
+                        <li>تأكد من صحة المبلغ المدخل</li>
+                        <li>سيتم تسجيل وقت بداية الوردية تلقائياً</li>
+                        <li>يمكنك إغلاق الوردية في أي وقت من لوحة التحكم</li>
+                        <li>سيتم تتبع جميع المعاملات خلال هذه الوردية</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shift Information -->
+    <div class="mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-gray-800 mb-3">
+            <i class="fas fa-user {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            معلومات الوردية
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+            <div>
+                <span class="font-medium">المستخدم:</span> {{ current_user.username }}
+            </div>
+            <div>
+                <span class="font-medium">التاريخ:</span> {{ moment().format('YYYY-MM-DD') }}
+            </div>
+            <div>
+                <span class="font-medium">الوقت:</span> {{ moment().format('HH:mm:ss') }}
+            </div>
+            <div>
+                <span class="font-medium">العملة:</span> {{ cash_drawer.currency }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-focus on opening balance field
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('opening_balance').focus();
+});
+
+// Format number input
+document.getElementById('opening_balance').addEventListener('input', function() {
+    let value = this.value.replace(/[^\d.]/g, '');
+    if (value.split('.').length > 2) {
+        value = value.substring(0, value.lastIndexOf('.'));
+    }
+    this.value = value;
+});
+</script>
+{% endblock %}

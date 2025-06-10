@@ -113,14 +113,33 @@
                     </div>
                 {% endif %}
                 
+                <!-- Add to Cart Form -->
+                <form method="POST" action="{{ url_for('core.add_to_cart', product_id=product.id) }}" class="mb-6">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <div class="flex items-center space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                        <div class="flex items-center">
+                            <label for="quantity" class="text-sm font-medium text-gray-700 {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}">
+                                {{ _('الكمية') }}:
+                            </label>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="99"
+                                   class="w-20 px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary text-center">
+                        </div>
+                        <button type="submit"
+                                class="flex-1 bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-colors font-medium">
+                            <i class="fas fa-cart-plus {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            {{ _('إضافة للسلة') }}
+                        </button>
+                    </div>
+                </form>
+
                 <!-- Action Buttons -->
                 <div class="flex space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
-                    <a href="{{ url_for('core.category_detail', category_id=product.category.id) }}" 
+                    <a href="{{ url_for('core.category_detail', category_id=product.category.id) }}"
                        class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition-colors">
                         <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
                         {{ _('العودة للفئة') }}
                     </a>
-                    <a href="{{ url_for('core.menu') }}" 
+                    <a href="{{ url_for('core.menu') }}"
                        class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-colors">
                         <i class="fas fa-list {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
                         {{ _('تصفح القائمة') }}

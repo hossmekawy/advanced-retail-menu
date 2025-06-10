@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('تأكيد الطلب') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- عنوان الصفحة - Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 {{ 'text-right' if current_lang == 'ar' else 'text-left' }}">
+            <i class="fas fa-clipboard-check {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }} text-primary"></i>
+            {{ _('تأكيد الطلب') }}
+        </h1>
+        <p class="mt-2 text-gray-600 {{ 'text-right' if current_lang == 'ar' else 'text-left' }}">
+            {{ _('أدخل بياناتك واختر طاولتك. سيتم تأكيد الطلب من قبل الإدارة') }}
+        </p>
+        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-500 {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                <p class="text-blue-800 text-sm">
+                    {{ _('ملاحظة: لا يتطلب دفع مسبق. سيتم تأكيد طلبك من قبل الإدارة وسيتم إعلامك بحالة الطلب') }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST" class="space-y-8">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- معلومات العميل - Customer Information -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-user {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }} text-primary"></i>
+                    {{ _('معلومات العميل') }}
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ _('الاسم الكامل') }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="customer_name" name="customer_name" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary {{ 'text-right' if current_lang == 'ar' else 'text-left' }}"
+                               placeholder="{{ _('أدخل اسمك الكامل') }}">
+                    </div>
+                    
+                    <div>
+                        <label for="customer_phone" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ _('رقم الهاتف') }} <span class="text-red-500">*</span>
+                        </label>
+                        <input type="tel" id="customer_phone" name="customer_phone" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary {{ 'text-right' if current_lang == 'ar' else 'text-left' }}"
+                               placeholder="{{ _('أدخل رقم هاتفك') }}">
+                    </div>
+                    
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ _('ملاحظات إضافية') }}
+                        </label>
+                        <textarea id="notes" name="notes" rows="3"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary {{ 'text-right' if current_lang == 'ar' else 'text-left' }}"
+                                  placeholder="{{ _('أي ملاحظات خاصة بطلبك (اختياري)') }}"></textarea>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- اختيار الطاولة - Table Selection -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-chair {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }} text-primary"></i>
+                    {{ _('اختيار الطاولة') }}
+                </h2>
+                
+                {% if available_tables %}
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                        {% for table in available_tables %}
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="table_id" value="{{ table.id }}" required
+                                       class="sr-only peer">
+                                <div class="border-2 border-gray-200 rounded-lg p-4 text-center transition-all peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white hover:border-gray-300">
+                                    <i class="fas fa-chair text-2xl mb-2"></i>
+                                    <div class="font-semibold">{{ _('طاولة') }} {{ table.table_number }}</div>
+                                    <div class="text-sm opacity-75">{{ table.capacity }} {{ _('أشخاص') }}</div>
+                                </div>
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+                        <p class="text-gray-600">{{ _('لا توجد طاولات متاحة حالياً') }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- ملخص الطلب - Order Summary -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                <i class="fas fa-receipt {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }} text-primary"></i>
+                {{ _('ملخص الطلب') }}
+            </h2>
+
+            <div class="space-y-4">
+                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span class="text-gray-600">{{ _('عدد العناصر') }}</span>
+                    <span class="font-medium">{{ cart_count }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                    <span class="text-gray-600">{{ _('المجموع الفرعي') }}</span>
+                    <span class="font-medium">{{ cart_total }} {{ settings.default_currency }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 text-lg font-semibold">
+                    <span>{{ _('المجموع الكلي') }}</span>
+                    <span class="text-primary">{{ cart_total }} {{ settings.default_currency }}</span>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-clock text-yellow-600 {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        <p class="text-yellow-800 text-sm">
+                            {{ _('سيتم تأكيد الطلب والدفع عند الاستلام أو حسب سياسة المطعم') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- أزرار الإجراءات - Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4">
+            <a href="{{ url_for('core.view_cart') }}" 
+               class="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg text-center font-medium hover:bg-gray-200 transition-colors">
+                <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                {{ _('العودة للسلة') }}
+            </a>
+            
+            {% if available_tables %}
+                <button type="submit"
+                        class="flex-1 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                    <i class="fas fa-paper-plane {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    {{ _('إرسال الطلب للإدارة') }}
+                </button>
+            {% else %}
+                <button type="button" disabled
+                        class="flex-1 bg-gray-400 text-white px-6 py-3 rounded-lg font-medium cursor-not-allowed">
+                    <i class="fas fa-ban {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    {{ _('لا يمكن إرسال الطلب') }}
+                </button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{% block extra_js %}
+<script>
+// تحسين تجربة المستخدم - UX Improvements
+document.addEventListener('DOMContentLoaded', function() {
+    // التحقق من صحة النموذج - Form validation
+    const form = document.querySelector('form');
+    const nameInput = document.getElementById('customer_name');
+    const phoneInput = document.getElementById('customer_phone');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // التحقق من الاسم - Name validation
+        if (!nameInput.value.trim()) {
+            isValid = false;
+            nameInput.classList.add('border-red-500');
+        } else {
+            nameInput.classList.remove('border-red-500');
+        }
+        
+        // التحقق من رقم الهاتف - Phone validation
+        if (!phoneInput.value.trim()) {
+            isValid = false;
+            phoneInput.classList.add('border-red-500');
+        } else {
+            phoneInput.classList.remove('border-red-500');
+        }
+        
+        // التحقق من اختيار الطاولة - Table selection validation
+        const selectedTable = document.querySelector('input[name="table_id"]:checked');
+        if (!selectedTable) {
+            isValid = false;
+            alert('{{ _("يرجى اختيار طاولة") }}');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    // إزالة الحدود الحمراء عند الكتابة - Remove red borders on input
+    nameInput.addEventListener('input', function() {
+        this.classList.remove('border-red-500');
+    });
+    
+    phoneInput.addEventListener('input', function() {
+        this.classList.remove('border-red-500');
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

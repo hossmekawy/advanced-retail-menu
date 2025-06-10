@@ -234,3 +234,15 @@ def search_products():
         'query': query,
         'count': len(result)
     })
+
+
+@bp.route('/cart/count')
+def get_cart_count():
+    """الحصول على عدد عناصر السلة - Get cart items count"""
+    cart = session.get('cart', {})
+    count = sum(item['quantity'] for item in cart.values())
+
+    return jsonify({
+        'success': True,
+        'count': count
+    })

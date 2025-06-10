@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('السلة') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- عنوان الصفحة - Page Header -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 {{ 'text-right' if current_lang == 'ar' else 'text-left' }}">
+            <i class="fas fa-shopping-cart {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }} text-primary"></i>
+            {{ _('سلة التسوق') }}
+        </h1>
+        <p class="mt-2 text-gray-600 {{ 'text-right' if current_lang == 'ar' else 'text-left' }}">
+            {{ _('راجع عناصر طلبك قبل المتابعة للدفع') }}
+        </p>
+    </div>
+
+    {% if cart_items %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- عناصر السلة - Cart Items -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            {{ _('عناصر الطلب') }} ({{ cart_count }})
+                        </h2>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-200">
+                        {% for item in cart_items %}
+                            <div class="p-6 flex items-center space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                                <!-- صورة المنتج - Product Image -->
+                                <div class="flex-shrink-0">
+                                    {% if item.product.photo_b64 %}
+                                        <img src="{{ item.product.photo_b64 }}" 
+                                             alt="{{ item.product.get_name(current_lang) }}"
+                                             class="w-16 h-16 object-cover rounded-lg">
+                                    {% else %}
+                                        <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-utensils text-gray-400"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- تفاصيل المنتج - Product Details -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-lg font-medium text-gray-900 truncate">
+                                        {{ item.product.get_name(current_lang) }}
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        {{ item.price }} {{ settings.default_currency }}
+                                    </p>
+                                </div>
+                                
+                                <!-- التحكم في الكمية - Quantity Controls -->
+                                <div class="flex items-center space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                                    <form method="POST" action="{{ url_for('core.update_cart', product_id=item.product.id) }}" class="flex items-center">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <input type="number" name="quantity" value="{{ item.quantity }}"
+                                               min="1" max="99"
+                                               class="w-16 px-2 py-1 border border-gray-300 rounded-md text-center focus:ring-primary focus:border-primary">
+                                        <button type="submit"
+                                                class="{{ 'mr-2' if current_lang == 'ar' else 'ml-2' }} px-3 py-1 bg-primary text-white rounded-md hover:bg-opacity-90 transition-colors">
+                                            {{ _('تحديث') }}
+                                        </button>
+                                    </form>
+                                </div>
+                                
+                                <!-- السعر الإجمالي - Total Price -->
+                                <div class="text-lg font-semibold text-gray-900">
+                                    {{ item.total }} {{ settings.default_currency }}
+                                </div>
+                                
+                                <!-- إزالة العنصر - Remove Item -->
+                                <form method="POST" action="{{ url_for('core.remove_from_cart', product_id=item.product.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <button type="submit"
+                                            class="text-red-600 hover:text-red-800 transition-colors"
+                                            onclick="return confirm('{{ _('هل أنت متأكد من إزالة هذا العنصر؟') }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- أزرار الإجراءات - Action Buttons -->
+                <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                    <a href="{{ url_for('core.menu') }}" 
+                       class="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg text-center font-medium hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        {{ _('متابعة التسوق') }}
+                    </a>
+                    <form method="POST" action="{{ url_for('core.clear_cart') }}" class="flex-1">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <button type="submit"
+                                class="w-full bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition-colors"
+                                onclick="return confirm('{{ _('هل أنت متأكد من مسح السلة؟') }}')">
+                            <i class="fas fa-trash {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            {{ _('مسح السلة') }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- ملخص الطلب - Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">
+                        {{ _('ملخص الطلب') }}
+                    </h2>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ _('عدد العناصر') }}</span>
+                            <span>{{ cart_count }}</span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>{{ _('المجموع الفرعي') }}</span>
+                            <span>{{ total }} {{ settings.default_currency }}</span>
+                        </div>
+                        <hr class="border-gray-200">
+                        <div class="flex justify-between text-lg font-semibold text-gray-900">
+                            <span>{{ _('المجموع الكلي') }}</span>
+                            <span>{{ total }} {{ settings.default_currency }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 space-y-3">
+                        <a href="{{ url_for('core.checkout') }}"
+                           class="w-full bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors flex items-center justify-center">
+                            <i class="fas fa-paper-plane {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            {{ _('إرسال الطلب') }}
+                        </a>
+                        <div class="text-xs text-gray-500 text-center">
+                            {{ _('لا يتطلب دفع مسبق - سيتم تأكيد الطلب من الإدارة') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- السلة فارغة - Empty Cart -->
+        <div class="text-center py-12">
+            <div class="max-w-md mx-auto">
+                <i class="fas fa-shopping-cart text-6xl text-gray-300 mb-4"></i>
+                <h2 class="text-2xl font-semibold text-gray-900 mb-2">
+                    {{ _('السلة فارغة') }}
+                </h2>
+                <p class="text-gray-600 mb-6">
+                    {{ _('لم تقم بإضافة أي عناصر للسلة بعد') }}
+                </p>
+                <a href="{{ url_for('core.menu') }}" 
+                   class="inline-flex items-center bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                    <i class="fas fa-utensils {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    {{ _('تصفح القائمة') }}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

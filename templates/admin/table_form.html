@@ -1,0 +1,176 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ title }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-chair {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            {{ title }}
+        </h1>
+        <a href="{{ url_for('admin.tables') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+            العودة للطاولات
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-{{ 'plus' if not table else 'edit' }} {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    {{ title }}
+                </h3>
+            </div>
+            <div class="p-6">
+                <form method="POST" class="space-y-6">
+                    {{ form.hidden_tag() }}
+
+                    <!-- Table Number -->
+                    <div>
+                        {{ form.table_number.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.table_number(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary" + (" border-red-500" if form.table_number.errors else "")) }}
+                        {% if form.table_number.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.table_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">أدخل رقم الطاولة (يجب أن يكون فريداً)</p>
+                    </div>
+
+                    <!-- Capacity -->
+                    <div>
+                        {{ form.capacity.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.capacity(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary" + (" border-red-500" if form.capacity.errors else "")) }}
+                        {% if form.capacity.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.capacity.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">عدد الأشخاص الذين يمكن أن تستوعبهم الطاولة</p>
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        {{ form.status.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.status(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary" + (" border-red-500" if form.status.errors else "")) }}
+                        {% if form.status.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.status.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="mt-2 text-sm text-gray-500">
+                            <div class="space-y-1">
+                                <div><strong>متاحة:</strong> الطاولة فارغة ومتاحة للحجز</div>
+                                <div><strong>مشغولة:</strong> الطاولة مشغولة حالياً</div>
+                                <div><strong>محجوزة:</strong> الطاولة محجوزة</div>
+                                <div><strong>طلب في الانتظار:</strong> تم وضع طلب على هذه الطاولة</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Is Active -->
+                    <div>
+                        <div class="flex items-center">
+                            {{ form.is_active(class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded") }}
+                            {{ form.is_active.label(class="ml-2 block text-sm text-gray-900") }}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">إلغاء تفعيل الطاولة يخفيها من العملاء</p>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-3 pt-6">
+                        <a href="{{ url_for('admin.tables') }}" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors text-center">
+                            <i class="fas fa-times {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            إلغاء
+                        </a>
+                        <button type="submit" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors">
+                            <i class="fas fa-save {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            {{ 'إضافة الطاولة' if not table else 'حفظ التغييرات' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Preview Card -->
+        {% if table %}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-eye {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        معاينة الطاولة
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <div class="bg-white rounded-lg shadow-md overflow-hidden border-2 border-{{ 'green-500' if table.get_status_color() == 'green' else 'red-500' if table.get_status_color() == 'red' else 'yellow-500' if table.get_status_color() == 'yellow' else 'gray-300' }}">
+                                <div class="bg-{{ 'green-500' if table.get_status_color() == 'green' else 'red-500' if table.get_status_color() == 'red' else 'yellow-500' if table.get_status_color() == 'yellow' else 'gray-500' }} text-white p-4 text-center">
+                                    <h4 class="font-semibold">
+                                        <i class="fas fa-chair {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                                        طاولة {{ table.table_number }}
+                                    </h4>
+                                </div>
+                                <div class="p-4 text-center">
+                                    <span class="inline-block px-3 py-1 rounded-full text-sm font-medium bg-{{ 'green-100 text-green-800' if table.get_status_color() == 'green' else 'red-100 text-red-800' if table.get_status_color() == 'red' else 'yellow-100 text-yellow-800' if table.get_status_color() == 'yellow' else 'gray-100 text-gray-800' }} mb-2">
+                                        {{ table.get_status_text('ar') }}
+                                    </span>
+                                    <div class="text-sm text-gray-600">
+                                        <i class="fas fa-users {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                                        {{ table.capacity }} أشخاص
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 px-4 py-2 text-center">
+                                    <span class="text-xs text-gray-600">
+                                        {% if table.is_active %}
+                                            <i class="fas fa-check-circle text-green-500 {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                                            نشط
+                                        {% else %}
+                                            <i class="fas fa-times-circle text-red-500 {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                                            غير نشط
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4">معلومات الطاولة:</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-700">الرقم:</span>
+                                    <span class="text-gray-900">{{ table.table_number }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-700">السعة:</span>
+                                    <span class="text-gray-900">{{ table.capacity }} أشخاص</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-700">الحالة:</span>
+                                    <span class="text-gray-900">{{ table.get_status_text('ar') }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-700">النشاط:</span>
+                                    <span class="text-gray-900">{{ 'نشط' if table.is_active else 'غير نشط' }}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="font-medium text-gray-700">تاريخ الإنشاء:</span>
+                                    <span class="text-gray-900">{{ table.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

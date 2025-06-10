@@ -1,0 +1,219 @@
+{% extends "admin/base.html" %}
+
+{% block title %}تقرير الوردية {{ shift.shift_number }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-chart-bar {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            تقرير الوردية
+        </h1>
+        <div class="flex space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+            <button onclick="window.print()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-print {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                طباعة التقرير
+            </button>
+            <a href="{{ url_for('admin.pos_shifts_list') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                العودة للورديات
+            </a>
+        </div>
+    </div>
+
+    <!-- Shift Header Info -->
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-md p-8 mb-8 text-white">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">{{ shift.shift_number }}</h2>
+                <p class="text-blue-100">{{ shift.user.username }}</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">فترة الوردية</h3>
+                <p class="text-blue-100">من: {{ shift.start_time.strftime('%Y-%m-%d %H:%M') }}</p>
+                {% if shift.end_time %}
+                    <p class="text-blue-100">إلى: {{ shift.end_time.strftime('%Y-%m-%d %H:%M') }}</p>
+                {% else %}
+                    <p class="text-blue-100">إلى: جارية</p>
+                {% endif %}
+                <p class="text-blue-100">المدة: {{ shift.get_duration() }}</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold mb-2">الحالة</h3>
+                <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full
+                    {% if shift.status == 'active' %}bg-green-100 text-green-800
+                    {% elif shift.status == 'closed' %}bg-gray-100 text-gray-800
+                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                    {% if shift.status == 'active' %}نشطة
+                    {% elif shift.status == 'closed' %}مغلقة
+                    {% else %}{{ shift.status }}{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- Opening Balance -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-play text-green-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-500">الرصيد الافتتاحي</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ shift.get_formatted_opening_balance() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Closing Balance -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-stop text-red-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-500">الرصيد الختامي</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ shift.get_formatted_closing_balance() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Sales -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-chart-line text-blue-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-500">إجمالي المبيعات</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ shift.get_formatted_total_sales() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variance -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-balance-scale text-purple-600 text-2xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-500">الفرق</p>
+                    <p class="text-2xl font-bold 
+                        {% if shift.variance %}
+                            {% if shift.variance > 0 %}text-green-600
+                            {% elif shift.variance < 0 %}text-red-600
+                            {% else %}text-gray-900{% endif %}
+                        {% else %}text-gray-900{% endif %}">
+                        {% if shift.variance %}{{ shift.variance }} {{ shift.cash_drawer.currency }}{% else %}غير محدد{% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sales Breakdown -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Payment Methods -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-credit-card {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    المبيعات حسب طريقة الدفع
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">نقداً</span>
+                        <span class="font-medium">{{ shift.cash_sales or 0 }} {{ shift.cash_drawer.currency }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">بطاقات</span>
+                        <span class="font-medium">{{ shift.card_sales or 0 }} {{ shift.cash_drawer.currency }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">أخرى</span>
+                        <span class="font-medium">{{ shift.other_sales or 0 }} {{ shift.cash_drawer.currency }}</span>
+                    </div>
+                    <div class="border-t pt-4">
+                        <div class="flex justify-between items-center font-bold">
+                            <span>المجموع</span>
+                            <span>{{ shift.get_formatted_total_sales() }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transaction Counts -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-list-ol {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    إحصائيات المعاملات
+                </h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">عدد الطلبات</span>
+                        <span class="font-medium">{{ shift.total_orders or 0 }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">عدد المدفوعات</span>
+                        <span class="font-medium">{{ shift.total_payments or 0 }}</span>
+                    </div>
+                    {% if shift.total_orders and shift.total_orders > 0 %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">متوسط قيمة الطلب</span>
+                            <span class="font-medium">{{ ((shift.total_sales or 0) / shift.total_orders)|round(2) }} {{ shift.cash_drawer.currency }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if shift.notes %}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-sticky-note {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    ملاحظات الوردية
+                </h3>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-700">{{ shift.notes }}</p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Report Footer -->
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center text-gray-500">
+        <p class="mb-2">تم إنشاء هذا التقرير في: {{ moment().format('YYYY-MM-DD HH:mm:ss') }}</p>
+        <p class="text-sm">نظام نقاط البيع - {{ settings.shop_name }}</p>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        font-size: 12px;
+    }
+    
+    .bg-gradient-to-r {
+        background: #3b82f6 !important;
+        color: white !important;
+    }
+}
+</style>
+{% endblock %}

@@ -64,6 +64,11 @@ class ProductionConfig(Config):
     SECRET_KEY = os.environ.get('SECRET_KEY') or Config.SECRET_KEY
 
 
+class DeploymentConfig(ProductionConfig):
+    """Deployment configuration - same as production"""
+    pass
+
+
 class TestingConfig(Config):
     """Testing configuration"""
     TESTING = True
@@ -75,6 +80,7 @@ class TestingConfig(Config):
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
+    'deployment': DeploymentConfig,
     'testing': TestingConfig,
     'default': DevelopmentConfig
 }

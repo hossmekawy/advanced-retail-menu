@@ -1,0 +1,344 @@
+{% extends "admin/base.html" %}
+
+{% block title %}تفاصيل الطلب {{ order.order_number }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-receipt {{ 'ml-3' if current_lang == 'ar' else 'mr-3' }}"></i>
+            تفاصيل الطلب {{ order.order_number }}
+        </h1>
+        <div class="flex space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+            {% if order.payment_status != 'paid' %}
+                <a href="{{ url_for('admin.pos_process_payment', order_id=order.id) }}" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
+                    <i class="fas fa-credit-card {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                    معالجة الدفع
+                </a>
+            {% endif %}
+            <a href="{{ url_for('admin.pos_generate_invoice', order_id=order.id) }}" class="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors">
+                <i class="fas fa-file-invoice {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                إنشاء فاتورة
+            </a>
+            <a href="{{ url_for('admin.edit_order', id=order.id) }}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-edit {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                تعديل الطلب
+            </a>
+            <a href="{{ url_for('admin.orders') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-arrow-left {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                العودة للطلبات
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Order Information -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Order Header -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-blue-500 text-white px-6 py-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fas fa-info-circle {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            معلومات الطلب
+                        </h3>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+                            {% if order.get_status_color() == 'yellow' %}bg-yellow-100 text-yellow-800
+                            {% elif order.get_status_color() == 'green' %}bg-green-100 text-green-800
+                            {% elif order.get_status_color() == 'red' %}bg-red-100 text-red-800
+                            {% elif order.get_status_color() == 'blue' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ order.get_status_text('ar') }}
+                        </span>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">معلومات العميل:</h4>
+                            <div class="space-y-2">
+                                <div><span class="font-medium text-gray-700">الاسم:</span> {{ order.customer_name }}</div>
+                                <div><span class="font-medium text-gray-700">الهاتف:</span> {{ order.customer_phone }}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">معلومات الطلب:</h4>
+                            <div class="space-y-2">
+                                <div><span class="font-medium text-gray-700">رقم الطلب:</span> {{ order.order_number }}</div>
+                                <div><span class="font-medium text-gray-700">الطاولة:</span> طاولة {{ order.table.table_number }}</div>
+                                <div><span class="font-medium text-gray-700">تاريخ الطلب:</span> {{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                {% if order.completed_at %}
+                                    <div><span class="font-medium text-gray-700">تاريخ الإكمال:</span> {{ order.completed_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                {% endif %}
+                                <div>
+                                    <span class="font-medium text-gray-700">حالة الدفع:</span>
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                        {% if order.payment_status == 'unpaid' %}bg-red-100 text-red-800
+                                        {% elif order.payment_status == 'partial' %}bg-yellow-100 text-yellow-800
+                                        {% elif order.payment_status == 'paid' %}bg-green-100 text-green-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {% if order.payment_status == 'unpaid' %}غير مدفوع
+                                        {% elif order.payment_status == 'partial' %}مدفوع جزئياً
+                                        {% elif order.payment_status == 'paid' %}مدفوع
+                                        {% else %}{{ order.payment_status }}{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if order.notes %}
+                        <div class="mt-6">
+                            <h4 class="text-lg font-medium text-gray-900 mb-3">ملاحظات:</h4>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <p class="text-blue-800">{{ order.notes }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-utensils {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        عناصر الطلب
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">المنتج</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">الكمية</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">سعر الوحدة</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">المجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for item in order.order_items %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            {% if item.product.photo_b64 %}
+                                                <img src="{{ item.product.photo_b64 }}"
+                                                     alt="{{ item.product.get_name('ar') }}"
+                                                     class="w-12 h-12 rounded-lg object-cover {{ 'ml-4' if current_lang == 'ar' else 'mr-4' }}">
+                                            {% else %}
+                                                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center {{ 'ml-4' if current_lang == 'ar' else 'mr-4' }}">
+                                                    <i class="fas fa-utensils text-gray-400"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ item.product.get_name('ar') }}</div>
+                                                {% if item.notes %}
+                                                    <div class="text-sm text-gray-500">{{ item.notes }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ item.quantity }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                                        {{ item.unit_price }} {{ order.currency }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
+                                        {{ item.total_price }} {{ order.currency }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="bg-gray-50">
+                            <tr>
+                                <th colspan="3" class="px-6 py-3 {{ 'text-right' if current_lang == 'ar' else 'text-left' }} text-sm font-medium text-gray-900">المجموع الكلي:</th>
+                                <th class="px-6 py-3 text-center text-lg font-bold text-green-600">
+                                    {{ order.get_formatted_total() }}
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="space-y-6">
+            <!-- Status Update -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-tasks {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        تحديث الحالة
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <form method="POST" action="{{ url_for('admin.update_order_status', id=order.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="mb-4">
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">الحالة الجديدة:</label>
+                            <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="pending" {{ 'selected' if order.status == 'pending' else '' }}>في الانتظار</option>
+                                <option value="preparing" {{ 'selected' if order.status == 'preparing' else '' }}>قيد التحضير</option>
+                                <option value="ready" {{ 'selected' if order.status == 'ready' else '' }}>جاهز للتقديم</option>
+                                <option value="served" {{ 'selected' if order.status == 'served' else '' }}>تم التقديم</option>
+                                <option value="completed" {{ 'selected' if order.status == 'completed' else '' }}>مكتمل</option>
+                                <option value="cancelled" {{ 'selected' if order.status == 'cancelled' else '' }}>ملغي</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                            <i class="fas fa-sync {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            تحديث الحالة
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Information -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-chair {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        معلومات الطاولة
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="text-center">
+                        <div class="border-2 rounded-lg mb-4
+                            {% if order.table.get_status_color() == 'green' %}border-green-500
+                            {% elif order.table.get_status_color() == 'red' %}border-red-500
+                            {% elif order.table.get_status_color() == 'yellow' %}border-yellow-500
+                            {% else %}border-gray-500{% endif %}">
+                            <div class="px-4 py-3 text-white
+                                {% if order.table.get_status_color() == 'green' %}bg-green-500
+                                {% elif order.table.get_status_color() == 'red' %}bg-red-500
+                                {% elif order.table.get_status_color() == 'yellow' %}bg-yellow-500
+                                {% else %}bg-gray-500{% endif %}">
+                                <h4 class="font-semibold">
+                                    طاولة {{ order.table.table_number }}
+                                </h4>
+                            </div>
+                            <div class="p-4">
+                                <span class="inline-flex px-3 py-1 rounded-full text-sm font-medium
+                                    {% if order.table.get_status_color() == 'green' %}bg-green-100 text-green-800
+                                    {% elif order.table.get_status_color() == 'red' %}bg-red-100 text-red-800
+                                    {% elif order.table.get_status_color() == 'yellow' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ order.table.get_status_text('ar') }}
+                                </span>
+                                <div class="mt-2 text-sm text-gray-600">
+                                    <i class="fas fa-users {{ 'ml-1' if current_lang == 'ar' else 'mr-1' }}"></i>
+                                    {{ order.table.capacity }} أشخاص
+                                </div>
+                            </div>
+                        </div>
+                        <a href="{{ url_for('admin.tables') }}" class="inline-flex items-center px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors">
+                            <i class="fas fa-chair {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                            إدارة الطاولات
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-clock {{ 'ml-2' if current_lang == 'ar' else 'mr-2' }}"></i>
+                        الجدول الزمني
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-blue-500"></div>
+                            <div class="timeline-content">
+                                <h4 class="timeline-title">تم إنشاء الطلب</h4>
+                                <p class="timeline-text">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+
+                        {% if order.status != 'pending' %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-blue-400"></div>
+                                <div class="timeline-content">
+                                    <h4 class="timeline-title">بدء التحضير</h4>
+                                    <p class="timeline-text">{{ order.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if order.status in ['ready', 'served', 'completed'] %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-green-500"></div>
+                                <div class="timeline-content">
+                                    <h4 class="timeline-title">الطلب جاهز</h4>
+                                    <p class="timeline-text">{{ order.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        {% if order.completed_at %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-gray-800"></div>
+                                <div class="timeline-content">
+                                    <h4 class="timeline-title">تم إكمال الطلب</h4>
+                                    <p class="timeline-text">{{ order.completed_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-{{ 'right' if current_lang == 'ar' else 'left' }}: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    {{ 'right' if current_lang == 'ar' else 'left' }}: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    {{ 'right' if current_lang == 'ar' else 'left' }}: -22px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.timeline-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #374151;
+}
+
+.timeline-text {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+</style>
+{% endblock %}
