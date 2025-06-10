@@ -1,0 +1,250 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ _('الإعدادات') }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">{{ _('إعدادات المتجر') }}</h1>
+        <p class="text-gray-600">{{ _('تخصيص إعدادات متجرك وشكله العام') }}</p>
+    </div>
+    
+    <!-- Settings Form -->
+    <div class="bg-white rounded-lg shadow">
+        <form method="POST" enctype="multipart/form-data" class="space-y-6 p-6">
+            {{ form.hidden_tag() }}
+            
+            <!-- Basic Information -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('المعلومات الأساسية') }}</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Shop Name -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.shop_name.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.shop_name.label.text }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.shop_name(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                        {% if form.shop_name.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.shop_name.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Default Currency -->
+                    <div>
+                        <label for="{{ form.default_currency.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.default_currency.label.text }}
+                        </label>
+                        {{ form.default_currency(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    </div>
+                    
+                    <!-- Default Language -->
+                    <div>
+                        <label for="{{ form.default_lang.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.default_lang.label.text }}
+                        </label>
+                        {{ form.default_lang(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Colors -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('الألوان') }}</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Primary Color -->
+                    <div>
+                        <label for="{{ form.primary_color.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.primary_color.label.text }}
+                        </label>
+                        <div class="flex items-center space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                            {{ form.primary_color(type="color", class="w-16 h-10 border border-gray-300 rounded cursor-pointer") }}
+                            {{ form.primary_color(type="text", class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                        </div>
+                    </div>
+                    
+                    <!-- Secondary Color -->
+                    <div>
+                        <label for="{{ form.secondary_color.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.secondary_color.label.text }}
+                        </label>
+                        <div class="flex items-center space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                            {{ form.secondary_color(type="color", class="w-16 h-10 border border-gray-300 rounded cursor-pointer") }}
+                            {{ form.secondary_color(type="text", class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Logo -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('الشعار') }}</h3>
+
+                <div class="space-y-4">
+                    <!-- Current Logo -->
+                    {% if settings.logo_b64 %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ _('الشعار الحالي') }}</label>
+                        <img src="{{ settings.logo_b64 }}" alt="{{ settings.shop_name }}" class="h-20 w-auto border border-gray-300 rounded">
+                    </div>
+                    {% endif %}
+
+                    <!-- Upload New Logo -->
+                    <div>
+                        <label for="{{ form.logo.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.logo.label.text }}
+                        </label>
+                        {{ form.logo(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                        <p class="mt-1 text-sm text-gray-500">
+                            {{ _('اختر صورة بصيغة JPG, PNG أو WebP. الحد الأقصى 1 ميجابايت.') }}
+                        </p>
+                        {% if form.logo.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.logo.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('روابط التواصل الاجتماعي') }}</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Facebook -->
+                    <div>
+                        <label for="{{ form.facebook_url.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-facebook text-blue-600 {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                            {{ form.facebook_url.label.text }}
+                        </label>
+                        {{ form.facebook_url(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder="https://facebook.com/yourpage") }}
+                    </div>
+
+                    <!-- Twitter -->
+                    <div>
+                        <label for="{{ form.twitter_url.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-twitter text-blue-400 {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                            {{ form.twitter_url.label.text }}
+                        </label>
+                        {{ form.twitter_url(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder="https://twitter.com/yourhandle") }}
+                    </div>
+
+                    <!-- Instagram -->
+                    <div>
+                        <label for="{{ form.instagram_url.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-instagram text-pink-600 {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                            {{ form.instagram_url.label.text }}
+                        </label>
+                        {{ form.instagram_url(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder="https://instagram.com/yourhandle") }}
+                    </div>
+
+                    <!-- WhatsApp -->
+                    <div>
+                        <label for="{{ form.whatsapp_url.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-whatsapp text-green-600 {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                            {{ form.whatsapp_url.label.text }}
+                        </label>
+                        {{ form.whatsapp_url(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder="https://wa.me/201234567890") }}
+                    </div>
+                </div>
+
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                            <h4 class="text-sm font-medium text-blue-800">{{ _('نصائح لروابط التواصل الاجتماعي') }}</h4>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc {{ 'list-inside' if current_lang == 'ar' else 'pl-5' }}">
+                                    <li>{{ _('استخدم الروابط الكاملة مع https://') }}</li>
+                                    <li>{{ _('لواتساب: استخدم https://wa.me/رقم_الهاتف') }}</li>
+                                    <li>{{ _('اترك الحقل فارغاً لإخفاء الرابط') }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }} pt-6 border-t border-gray-200">
+                <button type="submit" 
+                        class="px-6 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-opacity-90 transition-colors">
+                    <i class="fas fa-save {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('حفظ الإعدادات') }}
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Preview Section -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('معاينة') }}</h3>
+        <div class="border border-gray-200 rounded-lg p-4" style="background-color: {{ settings.primary_color }}22;">
+            <div class="flex items-center space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                {% if settings.logo_b64 %}
+                    <img src="{{ settings.logo_b64 }}" alt="{{ settings.shop_name }}" class="h-12 w-auto">
+                {% else %}
+                    <div class="w-12 h-12 rounded-full flex items-center justify-center" style="background-color: {{ settings.primary_color }};">
+                        <i class="fas fa-store text-white"></i>
+                    </div>
+                {% endif %}
+                <div>
+                    <h4 class="text-xl font-bold" style="color: {{ settings.primary_color }};">{{ settings.shop_name }}</h4>
+                    <p class="text-sm" style="color: {{ settings.secondary_color }};">{{ _('عينة من التصميم') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Color picker synchronization
+document.addEventListener('DOMContentLoaded', function() {
+    // Primary color sync
+    const primaryColorInput = document.querySelector('input[name="primary_color"][type="color"]');
+    const primaryTextInput = document.querySelector('input[name="primary_color"][type="text"]');
+    
+    if (primaryColorInput && primaryTextInput) {
+        primaryColorInput.addEventListener('change', function() {
+            primaryTextInput.value = this.value;
+        });
+        
+        primaryTextInput.addEventListener('input', function() {
+            if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                primaryColorInput.value = this.value;
+            }
+        });
+    }
+    
+    // Secondary color sync
+    const secondaryColorInput = document.querySelector('input[name="secondary_color"][type="color"]');
+    const secondaryTextInput = document.querySelector('input[name="secondary_color"][type="text"]');
+    
+    if (secondaryColorInput && secondaryTextInput) {
+        secondaryColorInput.addEventListener('change', function() {
+            secondaryTextInput.value = this.value;
+        });
+        
+        secondaryTextInput.addEventListener('input', function() {
+            if (/^#[0-9A-F]{6}$/i.test(this.value)) {
+                secondaryColorInput.value = this.value;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

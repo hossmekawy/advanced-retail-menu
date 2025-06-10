@@ -1,0 +1,209 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ _('المنتجات') }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ _('إدارة المنتجات') }}</h1>
+            <p class="text-gray-600">{{ _('إدارة منتجات متجرك') }}</p>
+        </div>
+        <a href="{{ url_for('admin.add_product') }}" 
+           class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+            <i class="fas fa-plus {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+            {{ _('إضافة منتج جديد') }}
+        </a>
+    </div>
+
+    <!-- Products Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if products.items %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الصورة') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('اسم المنتج') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الفئة') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('السعر') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الحالة') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الإجراءات') }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for product in products.items %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if product.photo_b64 %}
+                                <img src="{{ product.photo_b64 }}"
+                                     alt="{{ product.get_name(current_lang) }}"
+                                     class="w-12 h-12 rounded-lg object-cover">
+                            {% else %}
+                                <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-image text-gray-400"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ product.get_name(current_lang) }}
+                            </div>
+                            {% if product.get_description(current_lang) %}
+                            <div class="text-sm text-gray-500 truncate max-w-xs">
+                                {{ product.get_description(current_lang)[:50] }}...
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ product.category.get_name(current_lang) if product.category else _('بدون فئة') }}
+                            </div>
+                            {% if product.subcategory %}
+                            <div class="text-sm text-gray-500">
+                                {{ product.subcategory.get_name(current_lang) }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ product.get_formatted_price() }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if product.is_active %}
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    {{ _('نشط') }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    {{ _('غير نشط') }}
+                                </span>
+                            {% endif %}
+                            {% if product.is_featured %}
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 {{ 'mr-1' if current_lang == 'ar' else 'ml-1' }}">
+                                    {{ _('مميز') }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <a href="{{ url_for('admin.edit_product', id=product.id) }}" 
+                               class="text-indigo-600 hover:text-indigo-900">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('core.index') }}#product-{{ product.id }}" 
+                               class="text-green-600 hover:text-green-900" target="_blank">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_product', id=product.id) }}"
+                                  class="inline" onsubmit="return confirm('{{ _('هل أنت متأكد من حذف هذا المنتج؟') }}')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if products.pages > 1 %}
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+                {% if products.has_prev %}
+                    <a href="{{ url_for('admin.products', page=products.prev_num) }}" 
+                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        {{ _('السابق') }}
+                    </a>
+                {% endif %}
+                {% if products.has_next %}
+                    <a href="{{ url_for('admin.products', page=products.next_num) }}" 
+                       class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }} relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        {{ _('التالي') }}
+                    </a>
+                {% endif %}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        {{ _('عرض') }}
+                        <span class="font-medium">{{ products.per_page * (products.page - 1) + 1 }}</span>
+                        {{ _('إلى') }}
+                        <span class="font-medium">{{ products.per_page * products.page if products.page < products.pages else products.total }}</span>
+                        {{ _('من') }}
+                        <span class="font-medium">{{ products.total }}</span>
+                        {{ _('منتج') }}
+                    </p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if products.has_prev %}
+                            <a href="{{ url_for('admin.products', page=products.prev_num) }}" 
+                               class="relative inline-flex items-center px-2 py-2 rounded-{{ 'r' if current_lang == 'ar' else 'l' }}-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="fas fa-chevron-{{ 'right' if current_lang == 'ar' else 'left' }}"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% for page_num in products.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != products.page %}
+                                    <a href="{{ url_for('admin.products', page=page_num) }}" 
+                                       class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                                        {{ page_num }}
+                                    </a>
+                                {% else %}
+                                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary text-sm font-medium text-white">
+                                        {{ page_num }}
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                    ...
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if products.has_next %}
+                            <a href="{{ url_for('admin.products', page=products.next_num) }}" 
+                               class="relative inline-flex items-center px-2 py-2 rounded-{{ 'l' if current_lang == 'ar' else 'r' }}-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <i class="fas fa-chevron-{{ 'left' if current_lang == 'ar' else 'right' }}"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <i class="fas fa-box-open text-gray-400 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ _('لا توجد منتجات') }}</h3>
+            <p class="text-gray-500 mb-6">{{ _('ابدأ بإضافة منتجات جديدة لمتجرك') }}</p>
+            <a href="{{ url_for('admin.add_product') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-opacity-90">
+                <i class="fas fa-plus {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                {{ _('إضافة منتج جديد') }}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

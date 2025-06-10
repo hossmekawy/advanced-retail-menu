@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.get_name(current_lang) }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" 
+     x-data="categoryApp()" 
+     x-init="init()">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+            <li class="inline-flex items-center">
+                <a href="{{ url_for('core.index') }}" 
+                   class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+                    <i class="fas fa-home {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('الرئيسية') }}
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-{{ 'left' if current_lang == 'ar' else 'right' }} text-gray-400 mx-2"></i>
+                    <a href="{{ url_for('core.menu') }}" 
+                       class="text-sm font-medium text-gray-700 hover:text-primary">
+                        {{ _('القائمة') }}
+                    </a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-{{ 'left' if current_lang == 'ar' else 'right' }} text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">
+                        {{ category.get_name(current_lang) }}
+                    </span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+    
+    <!-- Category Header -->
+    <div class="text-center mb-12">
+        <div class="flex items-center justify-center mb-4">
+            {% if category.icon %}
+                <i class="{{ category.icon }} text-4xl text-primary {{ 'ml-4' if current_lang != 'ar' else 'mr-4' }}"></i>
+            {% endif %}
+            <h1 class="text-4xl font-bold text-gray-900">{{ category.get_name(current_lang) }}</h1>
+        </div>
+        
+        {% if category.get_description(current_lang) %}
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                {{ category.get_description(current_lang) }}
+            </p>
+        {% endif %}
+        
+        <div class="w-24 h-1 bg-primary mx-auto rounded-full mt-6"></div>
+    </div>
+    
+
+    
+    <!-- Products Count -->
+    <div class="mb-6">
+        <p class="text-gray-600 text-center">
+            {{ _('عدد المنتجات') }}: <span class="font-semibold">{{ products|length }}</span>
+        </p>
+    </div>
+    
+    <!-- Products Grid -->
+    {% if products %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for product in products %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div class="aspect-w-16 aspect-h-9">
+                    {% if product.photo_b64 %}
+                        <img src="{{ product.photo_b64 }}" 
+                             alt="{{ product.get_name(current_lang) }}"
+                             class="w-full h-48 object-cover">
+                    {% else %}
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            {{ product.get_name(current_lang) }}
+                        </h3>
+                        {% if product.is_featured %}
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                                {{ _('مميز') }}
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if product.get_description(current_lang) %}
+                        <p class="text-gray-600 mb-4 line-clamp-2">
+                            {{ product.get_description(current_lang) }}
+                        </p>
+                    {% endif %}
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-bold text-primary">
+                            {{ product.get_formatted_price() }}
+                        </span>
+                        <button @click="showProductModal({{ product.id }})"
+                                class="bg-secondary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+                            {{ _('عرض التفاصيل') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- No Products -->
+        <div class="text-center py-12">
+            <i class="fas fa-box-open text-6xl text-gray-400 mb-4"></i>
+            <h3 class="text-2xl font-semibold text-gray-900 mb-2">{{ _('لا توجد منتجات') }}</h3>
+            <p class="text-gray-600 mb-6">{{ _('لا توجد منتجات متاحة في هذه الفئة حالياً') }}</p>
+            <a href="{{ url_for('core.menu') }}" 
+               class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-colors">
+                {{ _('تصفح القائمة الكاملة') }}
+            </a>
+        </div>
+    {% endif %}
+    
+    <!-- Product Modal -->
+    <div x-show="showModal" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto"
+         @click="closeModal()">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-{{ 'right' if current_lang == 'ar' else 'left' }} overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"
+                 @click.stop>
+                <template x-if="selectedProduct">
+                    <div>
+                        <div class="aspect-w-16 aspect-h-9">
+                            <img :src="selectedProduct.photo_b64 || '/static/images/placeholder.jpg'" 
+                                 :alt="selectedProduct.name"
+                                 class="w-full h-64 object-cover">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="text-2xl font-bold text-gray-900" x-text="selectedProduct.name"></h3>
+                                <button @click="closeModal()" class="text-gray-400 hover:text-gray-600">
+                                    <i class="fas fa-times text-xl"></i>
+                                </button>
+                            </div>
+                            
+                            <p class="text-gray-600 mb-4" x-text="selectedProduct.description"></p>
+                            
+                            <div x-show="selectedProduct.ingredients" class="mb-4">
+                                <h4 class="font-semibold text-gray-900 mb-2">{{ _('المكونات') }}</h4>
+                                <p class="text-gray-600 text-sm" x-text="selectedProduct.ingredients"></p>
+                            </div>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-2xl font-bold text-primary" 
+                                      x-text="formatPrice(selectedProduct.price, selectedProduct.currency)"></span>
+                                <span x-show="selectedProduct.is_featured" 
+                                      class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full">
+                                    {{ _('منتج مميز') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Category App Alpine.js Component
+function categoryApp() {
+    return {
+        showModal: false,
+        selectedProduct: null,
+
+        currentLang: '{{ current_lang }}',
+        products: [
+            {% for product in products %}
+            {
+                id: {{ product.id }},
+                name_ar: "{{ product.name_ar | replace('"', '\\"') }}",
+                name_en: "{{ product.name_en | replace('"', '\\"') }}",
+                description_ar: "{{ product.description_ar | replace('"', '\\"') if product.description_ar else '' }}",
+                description_en: "{{ product.description_en | replace('"', '\\"') if product.description_en else '' }}",
+                ingredients_ar: "{{ product.ingredients_ar | replace('"', '\\"') if product.ingredients_ar else '' }}",
+                ingredients_en: "{{ product.ingredients_en | replace('"', '\\"') if product.ingredients_en else '' }}",
+                price: {{ product.price }},
+                currency: "{{ product.currency }}",
+                photo_b64: "{{ product.photo_b64 if product.photo_b64 else '' }}",
+                is_featured: {{ 'true' if product.is_featured else 'false' }}
+            }{{ ',' if not loop.last else '' }}
+            {% endfor %}
+        ],
+
+        init() {
+            // Initialize any needed data
+        },
+
+        async showProductModal(productId) {
+            // Find product in the products array
+            const product = this.products.find(p => p.id === productId);
+            if (product) {
+                this.selectedProduct = {
+                    id: product.id,
+                    name: this.currentLang === 'ar' ? product.name_ar : product.name_en,
+                    description: this.currentLang === 'ar' ? product.description_ar : product.description_en,
+                    ingredients: this.currentLang === 'ar' ? product.ingredients_ar : product.ingredients_en,
+                    price: product.price,
+                    currency: product.currency,
+                    photo_b64: product.photo_b64,
+                    is_featured: product.is_featured
+                };
+                this.showModal = true;
+                document.body.style.overflow = 'hidden';
+            }
+        },
+
+        closeModal() {
+            this.showModal = false;
+            this.selectedProduct = null;
+            document.body.style.overflow = 'auto';
+        },
+
+        formatPrice(price, currency) {
+            // Always use the default currency
+            const targetCurrency = '{{ settings.default_currency }}';
+            let convertedPrice = parseFloat(price);
+
+            return new Intl.NumberFormat(this.currentLang === 'ar' ? 'ar-EG' : 'en-US', {
+                style: 'currency',
+                currency: targetCurrency,
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            }).format(convertedPrice);
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-lg font-medium text-gray-900">{{ title }}</h2>
+                <a href="{{ url_for('admin.content_pages') }}" 
+                   class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('العودة') }}
+                </a>
+            </div>
+        </div>
+        
+        <form method="POST" class="p-6">
+            {{ form.hidden_tag() }}
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Arabic Content -->
+                <div class="space-y-6">
+                    <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+                        <i class="fas fa-globe {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                        {{ _('المحتوى العربي') }}
+                    </h3>
+                    
+                    <!-- Arabic Title -->
+                    <div>
+                        {{ form.title_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.title_ar(class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm") }}
+                        {% if form.title_ar.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.title_ar.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Arabic Content -->
+                    <div>
+                        {{ form.content_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.content_ar(class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm", style="min-height: 300px;") }}
+                        {% if form.content_ar.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.content_ar.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">{{ _('يمكنك استخدام HTML للتنسيق') }}</p>
+                    </div>
+                    
+                    <!-- Arabic Meta Description -->
+                    <div>
+                        {{ form.meta_description_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.meta_description_ar(class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm") }}
+                        {% if form.meta_description_ar.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.meta_description_ar.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">{{ _('وصف مختصر للصفحة (SEO)') }}</p>
+                    </div>
+                </div>
+                
+                <!-- English Content -->
+                <div class="space-y-6">
+                    <h3 class="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2">
+                        <i class="fas fa-globe {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                        {{ _('المحتوى الإنجليزي') }}
+                    </h3>
+                    
+                    <!-- English Title -->
+                    <div>
+                        {{ form.title_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.title_en(class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm") }}
+                        {% if form.title_en.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.title_en.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- English Content -->
+                    <div>
+                        {{ form.content_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.content_en(class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm", style="min-height: 300px;") }}
+                        {% if form.content_en.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.content_en.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">{{ _('يمكنك استخدام HTML للتنسيق') }}</p>
+                    </div>
+                    
+                    <!-- English Meta Description -->
+                    <div>
+                        {{ form.meta_description_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                        {{ form.meta_description_en(class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm") }}
+                        {% if form.meta_description_en.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.meta_description_en.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">{{ _('وصف مختصر للصفحة (SEO)') }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Settings -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('إعدادات الصفحة') }}</h3>
+                <div class="flex items-center">
+                    {{ form.is_active(class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded") }}
+                    {{ form.is_active.label(class="mr-2 block text-sm text-gray-900") }}
+                </div>
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <div class="flex justify-end space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                    <a href="{{ url_for('admin.content_pages') }}" 
+                       class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        {{ _('إلغاء') }}
+                    </a>
+                    <button type="submit" 
+                            class="bg-indigo-600 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-save {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                        {{ _('حفظ التغييرات') }}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-resize textareas
+document.addEventListener('DOMContentLoaded', function() {
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(function(textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        // Initial resize
+        textarea.style.height = textarea.scrollHeight + 'px';
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.get_title(current_lang) if page else _('اتصل بنا') }} - {{ settings.shop_name }}{% endblock %}
+
+{% block extra_head %}
+{% if page and page.get_meta_description(current_lang) %}
+<meta name="description" content="{{ page.get_meta_description(current_lang) }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                {{ page.get_title(current_lang) if page else _('اتصل بنا') }}
+            </h1>
+            <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+            <p class="mt-4 text-lg text-gray-600">{{ _('نحن هنا للإجابة على جميع استفساراتكم') }}</p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Contact Information -->
+            <div>
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ _('معلومات الاتصال') }}</h2>
+                    
+                    {% if page %}
+                        <div class="prose prose-lg max-w-none {{ 'prose-rtl' if current_lang == 'ar' else '' }} mb-8">
+                            {{ page.get_content(current_lang) | safe }}
+                        </div>
+                    {% else %}
+                        <!-- Default contact information -->
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-phone"></i>
+                                    </div>
+                                </div>
+                                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                                    <h3 class="text-lg font-medium text-gray-900">{{ _('الهاتف') }}</h3>
+                                    <p class="text-gray-600">+20 123 456 789</p>
+                                    <p class="text-gray-600">+20 987 654 321</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-secondary text-white w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                </div>
+                                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                                    <h3 class="text-lg font-medium text-gray-900">{{ _('البريد الإلكتروني') }}</h3>
+                                    <p class="text-gray-600">info@shop.com</p>
+                                    <p class="text-gray-600">support@shop.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-primary text-white w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                </div>
+                                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                                    <h3 class="text-lg font-medium text-gray-900">{{ _('العنوان') }}</h3>
+                                    <p class="text-gray-600">{{ _('شارع التحرير، وسط البلد') }}</p>
+                                    <p class="text-gray-600">{{ _('القاهرة، مصر') }}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0">
+                                    <div class="bg-secondary text-white w-10 h-10 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                                    <h3 class="text-lg font-medium text-gray-900">{{ _('ساعات العمل') }}</h3>
+                                    <p class="text-gray-600">{{ _('السبت - الخميس: 9:00 ص - 11:00 م') }}</p>
+                                    <p class="text-gray-600">{{ _('الجمعة: 2:00 م - 11:00 م') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Social Media -->
+                    {% if settings.facebook_url or settings.twitter_url or settings.instagram_url or settings.whatsapp_url %}
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('تابعونا على') }}</h3>
+                        <div class="flex space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                            {% if settings.facebook_url %}
+                            <a href="{{ settings.facebook_url }}" target="_blank" rel="noopener noreferrer"
+                               class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if settings.twitter_url %}
+                            <a href="{{ settings.twitter_url }}" target="_blank" rel="noopener noreferrer"
+                               class="bg-blue-400 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if settings.instagram_url %}
+                            <a href="{{ settings.instagram_url }}" target="_blank" rel="noopener noreferrer"
+                               class="bg-pink-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-pink-700 transition-colors">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                            {% endif %}
+
+                            {% if settings.whatsapp_url %}
+                            <a href="{{ settings.whatsapp_url }}" target="_blank" rel="noopener noreferrer"
+                               class="bg-green-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-green-700 transition-colors">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div>
+                <div class="bg-white rounded-lg shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">{{ _('أرسل لنا رسالة') }}</h2>
+                    
+                    <form class="space-y-6" x-data="{ sending: false }" @submit.prevent="sending = true; setTimeout(() => { sending = false; alert('{{ _('تم إرسال رسالتك بنجاح! سنتواصل معك قريباً.') }}'); $el.reset(); }, 1000)">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">{{ _('الاسم') }}</label>
+                            <input type="text" id="name" name="name" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                        </div>
+                        
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">{{ _('البريد الإلكتروني') }}</label>
+                            <input type="email" id="email" name="email" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                        </div>
+                        
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">{{ _('رقم الهاتف') }}</label>
+                            <input type="tel" id="phone" name="phone"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                        </div>
+                        
+                        <div>
+                            <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">{{ _('الموضوع') }}</label>
+                            <input type="text" id="subject" name="subject" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
+                        </div>
+                        
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-2">{{ _('الرسالة') }}</label>
+                            <textarea id="message" name="message" rows="5" required
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary"></textarea>
+                        </div>
+                        
+                        <button type="submit" 
+                                :disabled="sending"
+                                class="w-full bg-primary text-white py-3 px-4 rounded-md font-medium hover:bg-opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!sending">{{ _('إرسال الرسالة') }}</span>
+                            <span x-show="sending" class="flex items-center justify-center">
+                                <i class="fas fa-spinner fa-spin {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                                {{ _('جاري الإرسال...') }}
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Map Section (Optional) -->
+        <div class="mt-16">
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-900">{{ _('موقعنا على الخريطة') }}</h2>
+                </div>
+                <div class="h-96 bg-gray-200 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-map-marked-alt text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-600">{{ _('خريطة الموقع ستظهر هنا') }}</p>
+                        <p class="text-sm text-gray-500 mt-2">{{ _('يمكن إضافة خريطة Google Maps أو أي خدمة خرائط أخرى') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.prose-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.prose-rtl h1, .prose-rtl h2, .prose-rtl h3, .prose-rtl h4, .prose-rtl h5, .prose-rtl h6 {
+    text-align: right;
+}
+
+.prose-rtl ul, .prose-rtl ol {
+    padding-right: 1.5rem;
+    padding-left: 0;
+}
+</style>
+{% endblock %}

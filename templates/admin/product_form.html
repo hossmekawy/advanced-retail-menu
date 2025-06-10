@@ -1,0 +1,237 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+            <p class="text-gray-600">{{ _('إدارة بيانات المنتج') }}</p>
+        </div>
+        <a href="{{ url_for('admin.products') }}" 
+           class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+            {{ _('العودة للمنتجات') }}
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-lg shadow">
+        <form method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+            {{ form.hidden_tag() }}
+            
+            <!-- Basic Information -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Arabic Name -->
+                <div>
+                    {{ form.name_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.name_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.name_ar.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.name_ar.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- English Name -->
+                <div>
+                    {{ form.name_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.name_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.name_en.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.name_en.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Category and Subcategory -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Category -->
+                <div>
+                    {{ form.category_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.category_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.category_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.category_id.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Subcategory -->
+                <div>
+                    {{ form.subcategory_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.subcategory_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.subcategory_id.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.subcategory_id.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Descriptions -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Arabic Description -->
+                <div>
+                    {{ form.description_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.description_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", rows="4") }}
+                    {% if form.description_ar.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description_ar.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- English Description -->
+                <div>
+                    {{ form.description_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.description_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", rows="4") }}
+                    {% if form.description_en.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description_en.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Ingredients -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Arabic Ingredients -->
+                <div>
+                    {{ form.ingredients_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.ingredients_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", rows="3") }}
+                    {% if form.ingredients_ar.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.ingredients_ar.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- English Ingredients -->
+                <div>
+                    {{ form.ingredients_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.ingredients_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", rows="3") }}
+                    {% if form.ingredients_en.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.ingredients_en.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Price and Currency -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Price -->
+                <div>
+                    {{ form.price.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.price(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", step="0.01") }}
+                    {% if form.price.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.price.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Currency -->
+                <div>
+                    {{ form.currency.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.currency(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.currency.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.currency.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Sort Order -->
+                <div>
+                    {{ form.sort_order.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.sort_order(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.sort_order.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.sort_order.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Photo Upload -->
+            <div>
+                {{ form.photo.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                {{ form.photo(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                <p class="mt-1 text-sm text-gray-500">{{ _('اختر صورة بصيغة JPG, PNG أو WebP. الحد الأقصى 1 ميجابايت.') }}</p>
+                {% if form.photo.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.photo.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Current Photo Preview -->
+                {% if product and product.photo_b64 %}
+                <div class="mt-3">
+                    <p class="text-sm font-medium text-gray-700 mb-2">{{ _('الصورة الحالية:') }}</p>
+                    <img src="data:image/*;base64,{{ product.photo_b64 }}" 
+                         alt="{{ product.get_name(current_lang) }}" 
+                         class="w-32 h-32 rounded-lg object-cover border border-gray-300">
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Status Options -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Active Status -->
+                <div class="flex items-center">
+                    {{ form.is_active(class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded") }}
+                    {{ form.is_active.label(class="ml-2 block text-sm text-gray-900") }}
+                </div>
+
+                <!-- Featured Status -->
+                <div class="flex items-center">
+                    {{ form.is_featured(class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded") }}
+                    {{ form.is_featured.label(class="ml-2 block text-sm text-gray-900") }}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.products') }}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    {{ _('إلغاء') }}
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    <i class="fas fa-save {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('حفظ المنتج') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

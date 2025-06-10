@@ -1,0 +1,129 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ _('الفئات الفرعية') }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ _('إدارة الفئات الفرعية') }}</h1>
+            <p class="text-gray-600">{{ _('إدارة الفئات الفرعية لمنتجات متجرك') }}</p>
+        </div>
+        <a href="{{ url_for('admin.add_subcategory') }}" 
+           class="bg-primary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+            <i class="fas fa-plus {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+            {{ _('إضافة فئة فرعية جديدة') }}
+        </a>
+    </div>
+
+    <!-- Subcategories Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if subcategories %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('اسم الفئة الفرعية') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الفئة الرئيسية') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('ترتيب العرض') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الحالة') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('عدد المنتجات') }}
+                        </th>
+                        <th class="px-6 py-3 text-{{ 'right' if current_lang == 'ar' else 'left' }} text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            {{ _('الإجراءات') }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for subcategory in subcategories %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">
+                                {{ subcategory.get_name(current_lang) }}
+                            </div>
+                            {% if subcategory.get_description(current_lang) %}
+                            <div class="text-sm text-gray-500">
+                                {{ subcategory.get_description(current_lang) }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ subcategory.category.get_name(current_lang) if subcategory.category else _('بدون فئة') }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ subcategory.sort_order }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if subcategory.is_active %}
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    {{ _('نشط') }}
+                                </span>
+                            {% else %}
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    {{ _('غير نشط') }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ subcategory.products|length }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                            <a href="{{ url_for('admin.edit_subcategory', id=subcategory.id) }}" 
+                               class="text-indigo-600 hover:text-indigo-900">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('core.index') }}#category-{{ subcategory.category_id }}" 
+                               class="text-green-600 hover:text-green-900" target="_blank">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            {% if not subcategory.products %}
+                            <form method="POST" action="{{ url_for('admin.delete_subcategory', id=subcategory.id) }}"
+                                  class="inline" onsubmit="return confirm('{{ _('هل أنت متأكد من حذف هذه الفئة الفرعية؟') }}')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <button type="submit" class="text-red-600 hover:text-red-900">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-gray-400" title="{{ _('لا يمكن حذف فئة فرعية تحتوي على منتجات') }}">
+                                <i class="fas fa-trash"></i>
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-12">
+            <i class="fas fa-folder-open text-gray-400 text-6xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">{{ _('لا توجد فئات فرعية') }}</h3>
+            <p class="text-gray-500 mb-6">{{ _('ابدأ بإضافة فئات فرعية لتنظيم منتجاتك بشكل أفضل') }}</p>
+            <a href="{{ url_for('admin.add_subcategory') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-opacity-90">
+                <i class="fas fa-plus {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                {{ _('إضافة فئة فرعية جديدة') }}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

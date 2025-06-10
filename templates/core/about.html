@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.get_title(current_lang) if page else _('حول المتجر') }} - {{ settings.shop_name }}{% endblock %}
+
+{% block extra_head %}
+{% if page and page.get_meta_description(current_lang) %}
+<meta name="description" content="{{ page.get_meta_description(current_lang) }}">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                {{ page.get_title(current_lang) if page else _('حول المتجر') }}
+            </h1>
+            <div class="w-24 h-1 bg-primary mx-auto rounded-full"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-8 lg:p-12">
+                {% if page %}
+                    <div class="prose prose-lg max-w-none {{ 'prose-rtl' if current_lang == 'ar' else '' }}">
+                        {{ page.get_content(current_lang) | safe }}
+                    </div>
+                {% else %}
+                    <!-- Default content if no page is found -->
+                    <div class="prose prose-lg max-w-none {{ 'prose-rtl' if current_lang == 'ar' else '' }}">
+                        {% if current_lang == 'ar' %}
+                            <h2>مرحباً بكم في {{ settings.shop_name }}</h2>
+                            <p>نحن متجر متخصص في تقديم أفضل الأطعمة والمشروبات في المدينة. نفخر بتقديم منتجات عالية الجودة وخدمة ممتازة لعملائنا الكرام.</p>
+                            
+                            <h3>رؤيتنا</h3>
+                            <p>أن نكون الخيار الأول للعملاء الباحثين عن الجودة والطعم الأصيل.</p>
+                            
+                            <h3>مهمتنا</h3>
+                            <p>تقديم أفضل المنتجات الغذائية بأسعار مناسبة وخدمة عملاء متميزة.</p>
+                            
+                            <h3>قيمنا</h3>
+                            <ul>
+                                <li>الجودة في كل ما نقدمه</li>
+                                <li>الصدق والشفافية مع عملائنا</li>
+                                <li>الابتكار المستمر في منتجاتنا</li>
+                                <li>احترام البيئة والمجتمع</li>
+                            </ul>
+                        {% else %}
+                            <h2>Welcome to {{ settings.shop_name }}</h2>
+                            <p>We are a specialized store offering the best food and drinks in the city. We pride ourselves on providing high-quality products and excellent service to our valued customers.</p>
+                            
+                            <h3>Our Vision</h3>
+                            <p>To be the first choice for customers seeking quality and authentic taste.</p>
+                            
+                            <h3>Our Mission</h3>
+                            <p>To provide the best food products at reasonable prices with outstanding customer service.</p>
+                            
+                            <h3>Our Values</h3>
+                            <ul>
+                                <li>Quality in everything we offer</li>
+                                <li>Honesty and transparency with our customers</li>
+                                <li>Continuous innovation in our products</li>
+                                <li>Respect for the environment and community</li>
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="bg-gray-50 px-8 py-6 lg:px-12">
+                <div class="flex flex-col sm:flex-row items-center justify-between">
+                    <div class="mb-4 sm:mb-0">
+                        <h3 class="text-lg font-semibold text-gray-900">{{ _('جاهز لتجربة منتجاتنا؟') }}</h3>
+                        <p class="text-gray-600">{{ _('تصفح قائمتنا واكتشف أفضل العروض') }}</p>
+                    </div>
+                    <div class="flex space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                        <a href="{{ url_for('core.menu') }}" 
+                           class="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                            {{ _('تصفح القائمة') }}
+                        </a>
+                        <a href="{{ url_for('core.contact') }}" 
+                           class="bg-white text-primary border border-primary px-6 py-3 rounded-lg font-medium hover:bg-primary hover:text-white transition-colors">
+                            {{ _('اتصل بنا') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="bg-primary text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-award text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ _('جودة عالية') }}</h3>
+                <p class="text-gray-600">{{ _('نختار أفضل المكونات لضمان الجودة') }}</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-secondary text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shipping-fast text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ _('خدمة سريعة') }}</h3>
+                <p class="text-gray-600">{{ _('نقدم خدمة سريعة وموثوقة') }}</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="bg-primary text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-heart text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ _('رضا العملاء') }}</h3>
+                <p class="text-gray-600">{{ _('رضاكم هو هدفنا الأول') }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.prose-rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+.prose-rtl h1, .prose-rtl h2, .prose-rtl h3, .prose-rtl h4, .prose-rtl h5, .prose-rtl h6 {
+    text-align: right;
+}
+
+.prose-rtl ul, .prose-rtl ol {
+    padding-right: 1.5rem;
+    padding-left: 0;
+}
+</style>
+{% endblock %}

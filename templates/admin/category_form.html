@@ -1,0 +1,208 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+                <p class="text-gray-600">{{ _('املأ النموذج أدناه لإضافة أو تعديل فئة') }}</p>
+            </div>
+            <a href="{{ url_for('admin.categories') }}" 
+               class="text-gray-600 hover:text-gray-900">
+                <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                {{ _('العودة للقائمة') }}
+            </a>
+        </div>
+    </div>
+    
+    <!-- Form -->
+    <div class="bg-white rounded-lg shadow">
+        <form method="POST" class="space-y-6 p-6">
+            {{ form.hidden_tag() }}
+            
+            <!-- Basic Information -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('المعلومات الأساسية') }}</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Arabic Name -->
+                    <div>
+                        <label for="{{ form.name_ar.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.name_ar.label.text }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.name_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder=_("مثال: مشروبات")) }}
+                        {% if form.name_ar.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.name_ar.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- English Name -->
+                    <div>
+                        <label for="{{ form.name_en.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.name_en.label.text }}
+                            <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.name_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder="Example: Beverages") }}
+                        {% if form.name_en.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.name_en.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Descriptions -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('الأوصاف') }}</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Arabic Description -->
+                    <div>
+                        <label for="{{ form.description_ar.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.description_ar.label.text }}
+                        </label>
+                        {{ form.description_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", rows="4", placeholder=_("وصف مختصر للفئة...")) }}
+                        {% if form.description_ar.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.description_ar.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- English Description -->
+                    <div>
+                        <label for="{{ form.description_en.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.description_en.label.text }}
+                        </label>
+                        {{ form.description_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", rows="4", placeholder="Brief description of the category...") }}
+                        {% if form.description_en.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.description_en.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Display Settings -->
+            <div class="border-b border-gray-200 pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('إعدادات العرض') }}</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Icon -->
+                    <div>
+                        <label for="{{ form.icon.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.icon.label.text }}
+                        </label>
+                        <div class="relative">
+                            {{ form.icon(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", placeholder="fas fa-utensils") }}
+                            <div class="absolute inset-y-0 {{ 'left-0 pl-3' if current_lang == 'ar' else 'right-0 pr-3' }} flex items-center">
+                                <i id="icon-preview" class="fas fa-utensils text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">
+                            {{ _('استخدم أيقونات Font Awesome مثل: fas fa-coffee, fas fa-pizza-slice') }}
+                        </p>
+                        {% if form.icon.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.icon.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Sort Order -->
+                    <div>
+                        <label for="{{ form.sort_order.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.sort_order.label.text }}
+                        </label>
+                        {{ form.sort_order(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-transparent", min="0") }}
+                        <p class="mt-1 text-sm text-gray-500">
+                            {{ _('الرقم الأصغر يظهر أولاً') }}
+                        </p>
+                        {% if form.sort_order.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {% for error in form.sort_order.errors %}
+                                    <p>{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="pb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('الحالة') }}</h3>
+                
+                <div class="flex items-center">
+                    {{ form.is_active(class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded") }}
+                    <label for="{{ form.is_active.id }}" class="{{ 'mr-2' if current_lang == 'ar' else 'ml-2' }} block text-sm text-gray-900">
+                        {{ form.is_active.label.text }}
+                    </label>
+                </div>
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ _('الفئات غير النشطة لن تظهر في الموقع') }}
+                </p>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }} pt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.categories') }}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                    {{ _('إلغاء') }}
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-opacity-90 transition-colors">
+                    <i class="fas fa-save {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('حفظ') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Icon preview functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const iconInput = document.getElementById('{{ form.icon.id }}');
+    const iconPreview = document.getElementById('icon-preview');
+    
+    if (iconInput && iconPreview) {
+        // Update preview on input
+        iconInput.addEventListener('input', function() {
+            const iconClass = this.value.trim();
+            if (iconClass) {
+                iconPreview.className = iconClass + ' text-gray-400';
+            } else {
+                iconPreview.className = 'fas fa-utensils text-gray-400';
+            }
+        });
+        
+        // Set initial preview
+        if (iconInput.value) {
+            iconPreview.className = iconInput.value + ' text-gray-400';
+        }
+    }
+});
+</script>
+{% endblock %}

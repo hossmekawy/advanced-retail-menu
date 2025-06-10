@@ -1,0 +1,134 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+            <p class="text-gray-600">{{ _('إدارة بيانات الفئة الفرعية') }}</p>
+        </div>
+        <a href="{{ url_for('admin.subcategories') }}" 
+           class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors">
+            <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+            {{ _('العودة للفئات الفرعية') }}
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-lg shadow">
+        <form method="POST" class="p-6 space-y-6">
+            {{ form.hidden_tag() }}
+            
+            <!-- Category Selection -->
+            <div>
+                {{ form.category_id.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                {{ form.category_id(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                {% if form.category_id.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.category_id.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Names -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Arabic Name -->
+                <div>
+                    {{ form.name_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.name_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.name_ar.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.name_ar.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- English Name -->
+                <div>
+                    {{ form.name_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.name_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    {% if form.name_en.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.name_en.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Descriptions -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Arabic Description -->
+                <div>
+                    {{ form.description_ar.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.description_ar(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", rows="4") }}
+                    {% if form.description_ar.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description_ar.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- English Description -->
+                <div>
+                    {{ form.description_en.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.description_en(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent", rows="4") }}
+                    {% if form.description_en.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.description_en.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Sort Order and Status -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Sort Order -->
+                <div>
+                    {{ form.sort_order.label(class="block text-sm font-medium text-gray-700 mb-2") }}
+                    {{ form.sort_order(class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent") }}
+                    <p class="mt-1 text-sm text-gray-500">{{ _('رقم أقل = يظهر أولاً') }}</p>
+                    {% if form.sort_order.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {% for error in form.sort_order.errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Active Status -->
+                <div class="flex items-center pt-6">
+                    {{ form.is_active(class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded") }}
+                    {{ form.is_active.label(class="ml-2 block text-sm text-gray-900") }}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('admin.subcategories') }}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    {{ _('إلغاء') }}
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                    <i class="fas fa-save {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('حفظ الفئة الفرعية') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}{{ _('الرئيسية') }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-r from-primary to-secondary text-white py-20">
+    <div class="absolute inset-0 bg-black opacity-20"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            {{ _('مرحباً بكم في') }} {{ settings.shop_name }}
+        </h1>
+        <p class="text-xl md:text-2xl mb-8 text-blue-100">
+            {{ _('اكتشفوا أشهى الأطباق والمشروبات الطازجة') }}
+        </p>
+        <div class="space-y-4 md:space-y-0 md:space-x-4 {{ 'md:space-x-reverse' if current_lang == 'ar' else '' }}">
+            <a href="{{ url_for('core.menu') }}" 
+               class="inline-block bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                <i class="fas fa-utensils {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                {{ _('تصفح القائمة') }}
+            </a>
+            <a href="{{ url_for('core.about') }}" 
+               class="inline-block border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary transition-colors">
+                <i class="fas fa-info-circle {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                {{ _('حول المتجر') }}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+{% if featured_products %}
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {{ _('منتجاتنا المميزة') }}
+            </h2>
+            <p class="text-xl text-gray-600">
+                {{ _('تذوقوا أفضل ما لدينا من أطباق مميزة') }}
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for product in featured_products %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+                <div class="aspect-w-16 aspect-h-9">
+                    {% if product.photo_b64 %}
+                        <img src="{{ product.photo_b64 }}" 
+                             alt="{{ product.get_name(current_lang) }}"
+                             class="w-full h-48 object-cover">
+                    {% else %}
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-xl font-semibold text-gray-900">
+                            {{ product.get_name(current_lang) }}
+                        </h3>
+                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                            {{ _('مميز') }}
+                        </span>
+                    </div>
+                    <p class="text-gray-600 mb-4 line-clamp-2">
+                        {{ product.get_description(current_lang) }}
+                    </p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-2xl font-bold text-primary">
+                            {{ product.get_formatted_price() }}
+                        </span>
+                        <a href="{{ url_for('core.product_detail', product_id=product.id) }}"
+                           class="bg-secondary text-white px-4 py-2 rounded-md hover:bg-opacity-90 transition-colors">
+                            {{ _('عرض التفاصيل') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-12">
+            <a href="{{ url_for('core.menu') }}" 
+               class="inline-block bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors">
+                {{ _('عرض جميع المنتجات') }}
+                <i class="fas fa-arrow-{{ 'left' if current_lang == 'ar' else 'right' }} {{ 'mr-2' if current_lang == 'ar' else 'ml-2' }}"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Categories Section -->
+{% if categories %}
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {{ _('فئات منتجاتنا') }}
+            </h2>
+            <p class="text-xl text-gray-600">
+                {{ _('استكشفوا تشكيلتنا المتنوعة من الأطباق والمشروبات') }}
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for category in categories %}
+            <a href="{{ url_for('core.category_detail', category_id=category.id) }}"
+               class="group bg-white rounded-lg shadow-md p-6 text-center hover:shadow-lg transition-shadow">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <i class="{{ category.icon or 'fas fa-utensils' }} text-white text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                    {{ category.get_name(current_lang) }}
+                </h3>
+                {% if category.get_description(current_lang) %}
+                <p class="text-sm text-gray-600 line-clamp-2">
+                    {{ category.get_description(current_lang) }}
+                </p>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Features Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                {{ _('لماذا نحن مميزون؟') }}
+            </h2>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-leaf text-white text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ _('مكونات طازجة') }}</h3>
+                <p class="text-gray-600">{{ _('نستخدم أجود المكونات الطازجة في جميع أطباقنا') }}</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-clock text-white text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ _('تحضير سريع') }}</h3>
+                <p class="text-gray-600">{{ _('نضمن تحضير طلباتكم في أسرع وقت ممكن') }}</p>
+            </div>
+            
+            <div class="text-center">
+                <div class="w-20 h-20 bg-yellow-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-star text-white text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">{{ _('جودة عالية') }}</h3>
+                <p class="text-gray-600">{{ _('نلتزم بأعلى معايير الجودة في كل ما نقدمه') }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-16 bg-gradient-to-r from-primary to-secondary text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+            {{ _('جاهزون لتجربة لا تُنسى؟') }}
+        </h2>
+        <p class="text-xl mb-8 text-blue-100">
+            {{ _('تصفحوا قائمتنا الآن واختاروا ما يناسب ذوقكم') }}
+        </p>
+        <a href="{{ url_for('core.menu') }}" 
+           class="inline-block bg-white text-primary px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+            <i class="fas fa-utensils {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+            {{ _('استكشف القائمة الآن') }}
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.get_name(current_lang) }} - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+            <li class="inline-flex items-center">
+                <a href="{{ url_for('core.index') }}" 
+                   class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary">
+                    <i class="fas fa-home {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('الرئيسية') }}
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-{{ 'left' if current_lang == 'ar' else 'right' }} text-gray-400 mx-2"></i>
+                    <a href="{{ url_for('core.menu') }}" 
+                       class="text-sm font-medium text-gray-700 hover:text-primary">
+                        {{ _('القائمة') }}
+                    </a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-{{ 'left' if current_lang == 'ar' else 'right' }} text-gray-400 mx-2"></i>
+                    <a href="{{ url_for('core.category_detail', category_id=product.category.id) }}" 
+                       class="text-sm font-medium text-gray-700 hover:text-primary">
+                        {{ product.category.get_name(current_lang) }}
+                    </a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-{{ 'left' if current_lang == 'ar' else 'right' }} text-gray-400 mx-2"></i>
+                    <span class="text-sm font-medium text-gray-500">
+                        {{ product.get_name(current_lang) }}
+                    </span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+    
+    <!-- Product Details -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-12">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Product Image -->
+            <div class="aspect-w-16 aspect-h-9 lg:aspect-w-1 lg:aspect-h-1">
+                {% if product.photo_b64 %}
+                    <img src="{{ product.photo_b64 }}" 
+                         alt="{{ product.get_name(current_lang) }}"
+                         class="w-full h-full object-cover">
+                {% else %}
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-image text-gray-400 text-6xl"></i>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Product Info -->
+            <div class="p-8">
+                <div class="flex justify-between items-start mb-4">
+                    <h1 class="text-3xl font-bold text-gray-900">
+                        {{ product.get_name(current_lang) }}
+                    </h1>
+                    {% if product.is_featured %}
+                        <span class="bg-yellow-100 text-yellow-800 text-sm px-3 py-1 rounded-full">
+                            {{ _('منتج مميز') }}
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Category and Subcategory -->
+                <div class="mb-4">
+                    <span class="text-sm text-gray-500">{{ _('الفئة') }}: </span>
+                    <a href="{{ url_for('core.category_detail', category_id=product.category.id) }}" 
+                       class="text-primary hover:underline">
+                        {{ product.category.get_name(current_lang) }}
+                    </a>
+                    {% if product.subcategory %}
+                        <span class="text-gray-400 mx-2">•</span>
+                        <span class="text-sm text-gray-500">{{ product.subcategory.get_name(current_lang) }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Price -->
+                <div class="mb-6">
+                    <span class="text-4xl font-bold text-primary">
+                        {{ product.get_formatted_price() }}
+                    </span>
+                </div>
+                
+                <!-- Description -->
+                {% if product.get_description(current_lang) %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ _('الوصف') }}</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            {{ product.get_description(current_lang) }}
+                        </p>
+                    </div>
+                {% endif %}
+                
+                <!-- Ingredients -->
+                {% if product.get_ingredients(current_lang) %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ _('المكونات') }}</h3>
+                        <p class="text-gray-600 leading-relaxed">
+                            {{ product.get_ingredients(current_lang) }}
+                        </p>
+                    </div>
+                {% endif %}
+                
+                <!-- Action Buttons -->
+                <div class="flex space-x-4 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                    <a href="{{ url_for('core.category_detail', category_id=product.category.id) }}" 
+                       class="bg-gray-500 text-white px-6 py-3 rounded-md hover:bg-gray-600 transition-colors">
+                        <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                        {{ _('العودة للفئة') }}
+                    </a>
+                    <a href="{{ url_for('core.menu') }}" 
+                       class="bg-primary text-white px-6 py-3 rounded-md hover:bg-opacity-90 transition-colors">
+                        <i class="fas fa-list {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                        {{ _('تصفح القائمة') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Similar Products -->
+    {% if similar_products %}
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8 text-center">{{ _('منتجات مشابهة') }}</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {% for similar_product in similar_products %}
+                <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                    <a href="{{ url_for('core.product_detail', product_id=similar_product.id) }}">
+                        <div class="aspect-w-16 aspect-h-9">
+                            {% if similar_product.photo_b64 %}
+                                <img src="{{ similar_product.photo_b64 }}" 
+                                     alt="{{ similar_product.get_name(current_lang) }}"
+                                     class="w-full h-32 object-cover">
+                            {% else %}
+                                <div class="w-full h-32 bg-gray-200 flex items-center justify-center">
+                                    <i class="fas fa-image text-gray-400 text-2xl"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-sm font-semibold text-gray-900 line-clamp-1">
+                                    {{ similar_product.get_name(current_lang) }}
+                                </h3>
+                                {% if similar_product.is_featured %}
+                                    <span class="bg-yellow-100 text-yellow-800 text-xs px-1 py-0.5 rounded-full">
+                                        {{ _('مميز') }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="text-gray-600 text-xs mb-2 line-clamp-2">
+                                {{ similar_product.get_description(current_lang) }}
+                            </p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold text-primary">
+                                    {{ similar_product.get_formatted_price() }}
+                                </span>
+                                <span class="text-xs text-gray-500">{{ _('عرض') }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

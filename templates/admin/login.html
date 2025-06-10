@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang }}" dir="{{ 'rtl' if current_lang == 'ar' else 'ltr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ _('تسجيل الدخول') }} - {{ settings.shop_name }}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '{{ settings.primary_color }}',
+                        secondary: '{{ settings.secondary_color }}'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: {{ "'Cairo', 'Tajawal', sans-serif" if current_lang == 'ar' else "'Inter', sans-serif" }};
+            background: linear-gradient(135deg, {{ settings.primary_color }}22 0%, {{ settings.secondary_color }}22 100%);
+        }
+        
+        .login-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .floating-animation {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23000000" fill-opacity="0.1"><circle cx="30" cy="30" r="2"/></g></svg>');"></div>
+    </div>
+    
+    <!-- Login Card -->
+    <div class="login-card w-full max-w-md p-8 rounded-2xl shadow-2xl relative z-10">
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+            {% if settings.logo_b64 %}
+                <img src="{{ settings.logo_b64 }}" alt="{{ settings.shop_name }}" class="h-16 w-auto mx-auto mb-4 floating-animation">
+            {% else %}
+                <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center mx-auto mb-4 floating-animation">
+                    <i class="fas fa-store text-white text-2xl"></i>
+                </div>
+            {% endif %}
+            
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ _('تسجيل الدخول') }}</h1>
+            <p class="text-gray-600">{{ _('لوحة تحكم') }} {{ settings.shop_name }}</p>
+        </div>
+        
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded-lg {% if category == 'error' %}bg-red-50 border border-red-200 text-red-800{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %}">
+                        <div class="flex items-center">
+                            <i class="fas fa-{% if category == 'error' %}exclamation-circle{% else %}info-circle{% endif %} {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                            <span class="text-sm">{{ message }}</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Login Form -->
+        <form method="POST" class="space-y-6">
+            {{ form.hidden_tag() }}
+            
+            <!-- Username Field -->
+            <div>
+                <label for="{{ form.username.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.username.label.text }}
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 {{ 'right-0 pr-3' if current_lang == 'ar' else 'left-0 pl-3' }} flex items-center">
+                        <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    {{ form.username(class="w-full " + ("pr-10" if current_lang == "ar" else "pl-10") + " py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors", placeholder=_("أدخل اسم المستخدم")) }}
+                </div>
+                {% if form.username.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.username.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Password Field -->
+            <div>
+                <label for="{{ form.password.id }}" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.password.label.text }}
+                </label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 {{ 'right-0 pr-3' if current_lang == 'ar' else 'left-0 pl-3' }} flex items-center">
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    {{ form.password(class="w-full " + ("pr-10" if current_lang == "ar" else "pl-10") + " py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-colors", placeholder=_("أدخل كلمة المرور")) }}
+                </div>
+                {% if form.password.errors %}
+                    <div class="mt-1 text-sm text-red-600">
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" 
+                    class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-4 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                <i class="fas fa-sign-in-alt {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                {{ _('دخول') }}
+            </button>
+        </form>
+        
+        <!-- Footer Links -->
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('core.index') }}" 
+               class="text-sm text-gray-600 hover:text-primary transition-colors">
+                <i class="fas fa-arrow-{{ 'right' if current_lang == 'ar' else 'left' }} {{ 'ml-1' if current_lang != 'ar' else 'mr-1' }}"></i>
+                {{ _('العودة للموقع') }}
+            </a>
+        </div>
+        
+        <!-- Demo Credentials (for development) -->
+        {% if config.DEBUG %}
+            <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <h4 class="text-sm font-medium text-yellow-800 mb-2">{{ _('بيانات تجريبية') }}</h4>
+                <div class="text-xs text-yellow-700 space-y-1">
+                    <p><strong>{{ _('المستخدم') }}:</strong> admin</p>
+                    <p><strong>{{ _('كلمة المرور') }}:</strong> admin123</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Floating Elements -->
+    <div class="absolute top-10 {{ 'right-10' if current_lang == 'ar' else 'left-10' }} w-20 h-20 bg-primary opacity-10 rounded-full floating-animation" style="animation-delay: 0.5s;"></div>
+    <div class="absolute bottom-10 {{ 'left-10' if current_lang == 'ar' else 'right-10' }} w-16 h-16 bg-secondary opacity-10 rounded-full floating-animation" style="animation-delay: 1s;"></div>
+    <div class="absolute top-1/2 {{ 'right-20' if current_lang == 'ar' else 'left-20' }} w-12 h-12 bg-primary opacity-5 rounded-full floating-animation" style="animation-delay: 1.5s;"></div>
+</body>
+</html>

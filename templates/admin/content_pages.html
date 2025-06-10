@@ -1,0 +1,104 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ _('صفحات المحتوى') }}{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-900">{{ _('إدارة صفحات المحتوى') }}</h2>
+        <p class="mt-1 text-sm text-gray-600">{{ _('يمكنك تعديل محتوى الصفحات الثابتة في الموقع') }}</p>
+    </div>
+    
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- About Page -->
+            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-info-circle text-blue-500 text-2xl {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                    <h3 class="text-lg font-medium text-gray-900">{{ _('صفحة حول المتجر') }}</h3>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">{{ _('تحرير محتوى صفحة "حول المتجر"') }}</p>
+                <a href="{{ url_for('admin.edit_content_page', page_key='about') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-edit {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('تعديل') }}
+                </a>
+            </div>
+            
+            <!-- Contact Page -->
+            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-phone text-green-500 text-2xl {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                    <h3 class="text-lg font-medium text-gray-900">{{ _('صفحة اتصل بنا') }}</h3>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">{{ _('تحرير محتوى صفحة "اتصل بنا"') }}</p>
+                <a href="{{ url_for('admin.edit_content_page', page_key='contact') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors">
+                    <i class="fas fa-edit {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('تعديل') }}
+                </a>
+            </div>
+            
+            <!-- Footer -->
+            <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <div class="flex items-center mb-4">
+                    <i class="fas fa-window-minimize text-purple-500 text-2xl {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}"></i>
+                    <h3 class="text-lg font-medium text-gray-900">{{ _('تذييل الموقع') }}</h3>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">{{ _('تحرير محتوى تذييل الموقع') }}</p>
+                <a href="{{ url_for('admin.edit_content_page', page_key='footer') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-edit {{ 'ml-2' if current_lang != 'ar' else 'mr-2' }}"></i>
+                    {{ _('تعديل') }}
+                </a>
+            </div>
+        </div>
+        
+        {% if pages %}
+        <div class="mt-8">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">{{ _('جميع الصفحات') }}</h3>
+            <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                <ul class="divide-y divide-gray-200">
+                    {% for page in pages %}
+                    <li>
+                        <div class="px-4 py-4 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    {% if page.page_key == 'about' %}
+                                        <i class="fas fa-info-circle text-blue-500"></i>
+                                    {% elif page.page_key == 'contact' %}
+                                        <i class="fas fa-phone text-green-500"></i>
+                                    {% elif page.page_key == 'footer' %}
+                                        <i class="fas fa-window-minimize text-purple-500"></i>
+                                    {% else %}
+                                        <i class="fas fa-file-alt text-gray-500"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ page.get_title(current_lang) }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ page.page_key }} - {{ _('آخر تحديث') }}: {{ page.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ 'bg-green-100 text-green-800' if page.is_active else 'bg-red-100 text-red-800' }}">
+                                    {{ _('نشط') if page.is_active else _('غير نشط') }}
+                                </span>
+                                <a href="{{ url_for('admin.edit_content_page', page_key=page.page_key) }}" 
+                                   class="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
+                                    {{ _('تعديل') }}
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

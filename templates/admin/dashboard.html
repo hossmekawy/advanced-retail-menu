@@ -1,0 +1,242 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}{{ _('الرئيسية') }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Welcome Section -->
+    <div class="bg-gradient-to-r from-primary to-secondary rounded-lg p-6 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">{{ _('مرحباً بك') }}، {{ current_user.username }}!</h2>
+                <p class="text-blue-100">{{ _('إليك نظرة سريعة على متجرك') }}</p>
+            </div>
+            <div class="hidden md:block">
+                <i class="fas fa-chart-line text-4xl text-blue-200"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Categories Count -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-tags text-xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-600">{{ _('الفئات') }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.categories_count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Subcategories Count -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i class="fas fa-layer-group text-xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-600">{{ _('الفئات الفرعية') }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.subcategories_count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Products Count -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-boxes text-xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-600">{{ _('المنتجات') }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.products_count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Featured Products Count -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i class="fas fa-star text-xl"></i>
+                </div>
+                <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }}">
+                    <p class="text-sm font-medium text-gray-600">{{ _('المنتجات المميزة') }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ stats.featured_products_count }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">{{ _('إجراءات سريعة') }}</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="{{ url_for('admin.add_category') }}" 
+                   class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="p-2 bg-blue-100 rounded-lg {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}">
+                        <i class="fas fa-plus text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">{{ _('إضافة فئة') }}</p>
+                        <p class="text-sm text-gray-600">{{ _('فئة جديدة للمنتجات') }}</p>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('admin.add_product') }}"
+                   class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="p-2 bg-green-100 rounded-lg {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}">
+                        <i class="fas fa-plus text-green-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">{{ _('إضافة منتج') }}</p>
+                        <p class="text-sm text-gray-600">{{ _('منتج جديد للقائمة') }}</p>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('admin.settings') }}" 
+                   class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="p-2 bg-yellow-100 rounded-lg {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}">
+                        <i class="fas fa-cog text-yellow-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">{{ _('الإعدادات') }}</p>
+                        <p class="text-sm text-gray-600">{{ _('إعدادات المتجر') }}</p>
+                    </div>
+                </a>
+                
+                <a href="{{ url_for('core.menu') }}" 
+                   class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div class="p-2 bg-purple-100 rounded-lg {{ 'ml-3' if current_lang != 'ar' else 'mr-3' }}">
+                        <i class="fas fa-external-link-alt text-purple-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-gray-900">{{ _('عرض القائمة') }}</p>
+                        <p class="text-sm text-gray-600">{{ _('مشاهدة الموقع') }}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Latest Products -->
+    {% if latest_products %}
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">{{ _('أحدث المنتجات') }}</h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                {% for product in latest_products %}
+                <div class="flex items-center p-4 border border-gray-200 rounded-lg">
+                    <div class="flex-shrink-0">
+                        {% if product.photo_b64 %}
+                            <img src="{{ product.photo_b64 }}" alt="{{ product.get_name(current_lang) }}" 
+                                 class="w-12 h-12 rounded-lg object-cover">
+                        {% else %}
+                            <div class="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-image text-gray-400"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="{{ 'mr-4' if current_lang == 'ar' else 'ml-4' }} flex-1">
+                        <h4 class="text-sm font-medium text-gray-900">{{ product.get_name(current_lang) }}</h4>
+                        <p class="text-sm text-gray-600">{{ product.category.get_name(current_lang) }}</p>
+                    </div>
+                    <div class="flex items-center space-x-2 {{ 'space-x-reverse' if current_lang == 'ar' else '' }}">
+                        <span class="text-sm font-medium text-gray-900">{{ product.get_formatted_price() }}</span>
+                        {% if product.is_featured %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ _('مميز') }}
+                            </span>
+                        {% endif %}
+                        {% if not product.is_active %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                {{ _('غير نشط') }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- System Info -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Shop Info -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">{{ _('معلومات المتجر') }}</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">{{ _('اسم المتجر') }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ settings.shop_name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">{{ _('العملة الافتراضية') }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ settings.default_currency }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">{{ _('اللغة الافتراضية') }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ available_languages[settings.default_lang] }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-600">{{ _('آخر تحديث') }}</span>
+                    <span class="text-sm font-medium text-gray-900">{{ settings.updated_at.strftime('%Y-%m-%d') if settings.updated_at else _('غير محدد') }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Tips -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">{{ _('نصائح سريعة') }}</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                    </div>
+                    <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                        <p class="text-sm text-gray-900">{{ _('استخدم صور عالية الجودة للمنتجات لجذب العملاء') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                    </div>
+                    <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                        <p class="text-sm text-gray-900">{{ _('اكتب أوصاف مفصلة ومكونات واضحة للمنتجات') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                    </div>
+                    <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                        <p class="text-sm text-gray-900">{{ _('نظم المنتجات في فئات منطقية لسهولة التصفح') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1"></i>
+                    </div>
+                    <div class="{{ 'mr-3' if current_lang == 'ar' else 'ml-3' }}">
+                        <p class="text-sm text-gray-900">{{ _('حدث الأسعار بانتظام وأضف منتجات مميزة') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
